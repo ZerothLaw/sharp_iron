@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/sharp_iron/v15/Browse.VC.db
+/.vs/sharp_iron/v15/.suo
+/.vs
+/clr_c_api/.vs/clr_c_api/v15
+/clr_c_api/clr_c_api/Debug
+/clr_c_api/Debug
