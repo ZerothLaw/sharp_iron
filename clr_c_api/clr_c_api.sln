@@ -9,18 +9,30 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		dylib_debug|x64 = dylib_debug|x64
+		dylib_debug|x86 = dylib_debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		static_debug|x64 = static_debug|x64
+		static_debug|x86 = static_debug|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Debug|x64.ActiveCfg = Debug|x64
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Debug|x64.Build.0 = Debug|x64
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Debug|x86.ActiveCfg = Debug|Win32
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Debug|x86.Build.0 = Debug|Win32
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.dylib_debug|x64.ActiveCfg = dylib_debug|x64
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.dylib_debug|x64.Build.0 = dylib_debug|x64
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.dylib_debug|x86.ActiveCfg = dylib_debug|Win32
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.dylib_debug|x86.Build.0 = dylib_debug|Win32
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Release|x64.ActiveCfg = Release|x64
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Release|x64.Build.0 = Release|x64
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Release|x86.ActiveCfg = Release|Win32
 		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.Release|x86.Build.0 = Release|Win32
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.static_debug|x64.ActiveCfg = static_debug|x64
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.static_debug|x64.Build.0 = static_debug|x64
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.static_debug|x86.ActiveCfg = static_debug|Win32
+		{8AD5C3C7-9543-4345-8181-EF7FA0FF28B9}.static_debug|x86.Build.0 = static_debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

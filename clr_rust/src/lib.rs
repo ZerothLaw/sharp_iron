@@ -17,6 +17,7 @@ pub fn wrapper() -> *mut c_void {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use std::env;
 	
 	#[test]
 	fn new_clr() {

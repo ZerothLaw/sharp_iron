@@ -13,3 +13,7 @@
 /clr_rust/target/debug
 /clr_rust/out.txt
 /clr_rust/1
+/clr_c_api/clr_c_api/x64
+/clr_c_api/x64
+/clr_rust/clr_c_api.lib
+/clr_rust/clr_c_api.dll
