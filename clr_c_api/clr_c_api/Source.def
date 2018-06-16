@@ -1,0 +1,3 @@
+LIBRARY clr_c_api
+EXPORTS
+    newCLRMetaHost @1
