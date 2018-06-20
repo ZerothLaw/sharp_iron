@@ -298,7 +298,7 @@
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="wrapper.h" />
+    <ClInclude Include="clr_c_api.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="clr_c_api.cpp">

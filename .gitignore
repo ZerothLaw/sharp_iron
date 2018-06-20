@@ -17,3 +17,7 @@
 /clr_c_api/x64
 /clr_rust/clr_c_api.lib
 /clr_rust/clr_c_api.dll
+/clr_c_api/.vs/clr_c_api/DesignTimeBuild
+/clr_c_api/TestAssembly/bin
+/clr_c_api/TestAssembly/obj
+/clr_rust/TestAssembly.dll

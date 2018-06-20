@@ -21,7 +21,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wrapper.h">
+    <ClInclude Include="clr_c_api.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
