@@ -1,6 +1,41 @@
+use std::collections::HashMap;
 use std::env;
+use std::fs;
 use std::process::Command;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
+
+extern crate serde_json;
+
+fn get_files(dir: Path) -> Vec<DirEntry> {
+	if dir.is_dir() {
+		match fs::read_dir(dir) {
+			Ok(reader) => reader.collect()
+		}
+	}
+	Vec::new()
+}
+
+fn get_timestamps(dir: Path, extensions: Vec<&str>) -> HashMap<Path, SystemTime> {
+	
+}
+
+fn do_build(timestamp_path: Path, dir: Path, extensions: Vec<&str>) -> bool {
+	if timestamp_path.exists() {
+		//compare timestamps
+		let file = fs::File::open(timestamp_path).unwrap();
+		let original_timestamps: HashMap<Path, SystemTime> = serde_json::from_reader(file);
+		let new_timestamps = get_timestamps(dir, extensions);
+		
+		
+	}
+	//otherwise, write timestamps to file, then return true
+	let timestamps = get_timestamps(dir, extensions);
+	let mut timestamp_file = fs::File::open(timestamp_path).unwrap();
+	serde_json::to_writer(timestamp_file, &timestamps);
+	true
+}
+
 
 fn build_lib() {
 	let _res = Command::new("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\devenv.exe").args(&[".\\clr_c_api\\clr_c_api.sln", "/Clean", "static_debug"]).output().expect("aaaaaaa");
