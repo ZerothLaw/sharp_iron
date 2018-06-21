@@ -75,13 +75,10 @@ fn devenv_command(solution_path: &Path, task: &str, project: &str) {
 					};
 					let devenv_path = &devenv_path[0];
 					let devenv_path = &devenv_path["productPath"];
-					println!("Running command... {} {:?}", devenv_path.to_string(), &[solution_path.to_str().unwrap(), task, project, "/Project", "clr_c_api"]);
-					let vs_command = Command::new(devenv_path.to_string()).args(&[solution_path.to_str().unwrap(), task, project, "/Project", "clr_c_api"]).output();
-					let vs_command = match vs_command {
-						Ok(comm) => comm, 
-						Err(ex) => {panic!("Command failed! {}", ex);}
-					};
-					println!("Build results: {:?}", String::from_utf8_lossy(&vs_command.stdout));
+					println!("Running command... {} {:?}", devenv_path.to_string(), &[task, project, solution_path.to_str().unwrap(), "/Project", "clr_c_api"]);
+					let _vs_command = Command::new(devenv_path.to_string()).args(&[task, project, solution_path.to_str().unwrap(), "/Project", "clr_c_api"]).output();
+					//there is no output...
+					//println!("Build results: {:?}", String::from_utf8_lossy(&vs_command.stdout));
 				}, 
 				false => { panic!(output.status);}
 			}
@@ -92,7 +89,6 @@ fn devenv_command(solution_path: &Path, task: &str, project: &str) {
 			panic!("vswhere failed.");
 		}
 	};
-	println!("devenv_command");
 }
 
 fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
@@ -121,7 +117,7 @@ fn copy_command(fle: &PathBuf, dest: PathBuf, overwrite: bool) {
 		Ok(res) => res, 
 		Err(ex) => { println!("{:?} exception.", ex); panic!(ex);}
 	};
-	println!("Copy results: {:?}", &res.stdout);
+	println!("Copy results: {:?}", String::from_utf8_lossy(&res.stdout));
 }
 
 fn get_rust_lib_home() -> PathBuf {
@@ -137,7 +133,7 @@ fn get_rust_lib_home() -> PathBuf {
 }
 
 fn copy_c_lib() {
-	let p = Path::new(".\\clr_c_api\\x64\\");
+	let p = Path::new(".\\x64\\");
 	let proj_name = "static_debug";
 	let fle_name = "clr_c_api.lib";
 	let p2 = p.join(proj_name).join(fle_name);

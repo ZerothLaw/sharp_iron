@@ -46,6 +46,7 @@ extern "C" {
 	typedef struct ICorRuntimeHost ICorRuntimeHost;
 	//typedef struct _Assembly _Assembly;
 
+
 	CAPIResult newCLRMetaHost();
 	CAPIResult freeCLRMetaHost(ICLRMetaHost* host);
 	CAPIResult CLRMetaHost_get_runtime(ICLRMetaHost* host, const char* version);
