@@ -118,5 +118,5 @@ build: false
 #directly or perform other testing commands. Rust will automatically be placed in the PATH
 # environment variable.
 test_script:
-  - call build_c_api.bat .\clr_c_api\clr_c_api.sln %USERPROFILE%\.rustup stable 64
+  - cmd: build_c_api.bat .\clr_c_api\clr_c_api.sln %USERPROFILE%\.rustup stable 64
   - cargo test --verbose %cargoflags%
