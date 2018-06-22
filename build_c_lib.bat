@@ -1,4 +1,4 @@
-echo off
+REM echo off
 REM build c_lib batch file
 REM example call: build_c_lib.bat .\clr_c_api\clr_c_api.sln %USERPROFILE%\.rustup stable 64
 set SOLUTION_PATH=%1
@@ -13,6 +13,7 @@ REM echo %DEVENV%
 set VSMSBUILDCMD="%DEVENV:IDE\devenv.exe=Tools\VsMSBuildCmd.bat%"
 REM echo %VSMSBUILDCMD%
 call %VSMSBUILDCMD%
+echo on
 "%DEVENV%" %SOLUTION_PATH% /Clean static_debug /Project clr_c_api /out Clean_static_debug.log
 "%DEVENV%" %SOLUTION_PATH% /Build static_debug /Project clr_c_api /out Build_static_debug.log
 "%DEVENV%" %SOLUTION_PATH% /Clean dylib_debug /Project clr_c_api /out Clean_dylib_debug.log
