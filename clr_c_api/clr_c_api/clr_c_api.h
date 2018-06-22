@@ -15,10 +15,10 @@ struct FacadeInterface : IUnknown {
 	virtual HRESULT __stdcall Run(LPWSTR name, LPWSTR* result) = 0;
 };
 
-class SamplehostControl : IHostControl {
+class FacadeHostControl : IHostControl {
 public:
-	SamplehostControl();
-	virtual ~SamplehostControl();
+	FacadeHostControl();
+	virtual ~FacadeHostControl();
 	FacadeInterface* GetFacade();
 	HRESULT __stdcall QueryInterface(const IID &iid, void **ppv);
 	ULONG __stdcall AddRef();
@@ -47,8 +47,8 @@ extern "C" {
 	//typedef struct _Assembly _Assembly;
 
 
-	CAPIResult newCLRMetaHost();
-	CAPIResult freeCLRMetaHost(ICLRMetaHost* host);
+	CAPIResult CLRMetaHost_new();
+	CAPIResult CLRMetaHost_free(ICLRMetaHost* host);
 	CAPIResult CLRMetaHost_get_runtime(ICLRMetaHost* host, const char* version);
 	CAPIResult CLRRuntimeInfo_free(ICLRRuntimeInfo* info);
 	bool CLRRuntimeInfo_is_loadable(ICLRRuntimeInfo* info);

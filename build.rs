@@ -113,6 +113,7 @@ fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 }
 
 fn copy_command(fle: &PathBuf, dest: PathBuf, overwrite: bool) {
+	println!("performing copy: xcopy {:?}", &[fle.to_str().unwrap(), dest.to_str().unwrap(), {match overwrite{ true => "/Y", false => ""}}]);
 	let res = match Command::new("xcopy").args(&[fle.to_str().unwrap(), dest.to_str().unwrap(), {match overwrite{ true => "/Y", false => ""}}]).output() {
 		Ok(res) => res, 
 		Err(ex) => { println!("{:?} exception.", ex); panic!(ex);}
@@ -133,7 +134,7 @@ fn get_rust_lib_home() -> PathBuf {
 }
 
 fn copy_c_lib() {
-	let p = Path::new(".\\x64\\");
+	let p = Path::new(".\\clr_c_api\\x64\\");
 	let proj_name = "static_debug";
 	let fle_name = "clr_c_api.lib";
 	let p2 = p.join(proj_name).join(fle_name);
