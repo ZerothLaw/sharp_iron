@@ -1,10 +1,33 @@
 LIBRARY clr_c_api
 EXPORTS
-    CLRMetaHost_new @1
-    CLRMetaHost_get_runtime @2
+    ;CLRMetaHost functions
+	CLRMetaHost_new         @1
+	CLRMetaHost_get_runtime @2
+
+	;CLRRuntimeInfo functions
 	CLRRuntimeInfo_is_loadable @3
-	CLRRuntimeInfo_get_clr_runtime @4
-	CLRRuntimeHost_start @5
-	CLRRuntimeHost_load_assembly @6
-	CLRRuntimeHost_stop @7
-	Assembly_release @8
+	CLRRuntimeInfo_is_loaded   @4
+	CLRRuntimeInfo_is_loaded_from_handle @5
+	CLRRuntimeInfo_is_started @6
+	CLRRuntimeInfo_get_clr_runtime @7
+	CLRRuntimeInfo_load_error_string @8
+	CLRRuntimeInfo_load_library @9
+
+	CAPI_free_error_string @10
+
+	;CLRRuntimeHost functions
+	CLRRuntimeHost_stop @11
+	CLRRuntimeHost_start @12
+	CLRRuntimeHost_load_assembly @13
+
+	;Assembly functions(likely to change)
+	Assembly_release @14
+	Assembly_get_type @15
+
+	;Type functions(likely to change)
+	Type_call_static_method @16
+	Type_create_instance @17
+
+	;Object functions(likely to change)
+	Object_invoke @18
+	Object_free @19
