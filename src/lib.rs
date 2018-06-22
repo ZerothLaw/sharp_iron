@@ -13,7 +13,7 @@ struct CAPIResult {
 
 #[link(name="clr_c_api", kind="static")]
 extern "C" {
-	fn newCLRMetaHost() -> CAPIResult;
+	fn CLRMetaHost_new() -> CAPIResult;
 	fn CLRMetaHost_get_runtime(host: *mut c_void, version: *const c_char) -> CAPIResult; 
 	fn CLRRuntimeInfo_is_loadable(runtime_info: *mut c_void) -> bool;
 	fn CLRRuntimeInfo_get_clr_runtime(runtime_info: *mut c_void) -> CAPIResult;
@@ -32,7 +32,7 @@ pub struct CLRMetaHost {
 impl CLRMetaHost {
 	pub fn new() -> CLRMetaHost {
 		unsafe {
-			let res = newCLRMetaHost();
+			let res = CLRMetaHost_new();
 			let ptr = match res.ok {
 				true => res.c_ptr, 
 				false => { panic!("CLRMetaHost::new call failed with HRESULT: {:?}", res.hr); }

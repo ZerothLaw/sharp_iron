@@ -1,6 +1,6 @@
 LIBRARY clr_c_api
 EXPORTS
-    newCLRMetaHost @1
+    CLRMetaHost_new @1
     CLRMetaHost_get_runtime @2
 	CLRRuntimeInfo_is_loadable @3
 	CLRRuntimeInfo_get_clr_runtime @4
