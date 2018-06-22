@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::env;
 use std::ffi::OsString;
 use std::fs::{self, DirEntry, read_dir};
 use std::process::Command;
@@ -7,7 +6,6 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 extern crate serde_json;
-use serde_json::Value;
 
 fn get_files(dir: &Path) -> Vec<DirEntry> {
 	if dir.is_dir() {
@@ -56,52 +54,12 @@ fn do_build(timestamp_path: PathBuf, dir: &Path, extensions: Vec<&str>) -> bool 
 	true
 }
 
-fn devenv_command(solution_path: &Path, task: &str, project: &str) {
-	//find devenv location via vswhere
-	let program_files = std::env::var("ProgramFiles(x86)").unwrap();
-
-	let p = Path::new(&program_files).join("Microsoft Visual Studio").join("Installer").join("vswhere.exe");
-	let vswhere = Command::new(p).args(&["-format", "json", "-latest", "-legacy"]).output();
-	match vswhere {
-		Ok(output) => {
-			match output.status.success() {
-				true => {
-					let stdout = String::from_utf8_lossy(&output.stdout);
-					let devenv_path: Value  = match serde_json::from_str(&stdout) {
-						Ok(v) => {
-							v
-						}
-						Err(ex) => { panic!(ex); }
-					};
-					let devenv_path = &devenv_path[0];
-					let devenv_path = &devenv_path["productPath"];
-					println!("Running command... {} {:?}", devenv_path.to_string(), &[task, project, solution_path.to_str().unwrap(), "/Project", "clr_c_api"]);
-					let _vs_command = Command::new(devenv_path.to_string()).args(&[task, project, solution_path.to_str().unwrap(), "/Project", "clr_c_api"]).output();
-					//there is no output...
-					//println!("Build results: {:?}", String::from_utf8_lossy(&vs_command.stdout));
-				}, 
-				false => { panic!(output.status);}
-			}
-		},
-		Err(ex) => {
-			println!("Could not find vswhere or vswhere failed.");
-			println!("error: {:?}", ex);
-			panic!("vswhere failed.");
-		}
-	};
-}
 
 fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 	println!("build_c_lib: ({:?}, {:?})",  dir, extensions);
 	let timestamp_file = dir.join(".timestamps.json");
 	if do_build(timestamp_file, dir, extensions.clone()) {
-		let proj_name = "static_debug";
-		devenv_command(Path::new(".\\clr_c_api\\clr_c_api.sln"), "/Clean", proj_name);
-		devenv_command(Path::new(".\\clr_c_api\\clr_c_api.sln"), "/Build", proj_name);
-
-		let proj_name = "dylib_debug";
-		devenv_command(Path::new(".\\clr_c_api\\clr_c_api.sln"), "/Clean", proj_name);
-		devenv_command(Path::new(".\\clr_c_api\\clr_c_api.sln"), "/Build", proj_name);
+		let _bat_command = Command::new("call").args(&["build_c_lib.bat", ".\\clr_c_api\\clr_c_api.sln", "%USERPROFILE%\\.rustup", "stable", "64"]).output();
 
 		let timestamps = get_timestamps(dir, extensions);
 		let timestamp_file = dir.join(".timestamps.json");
@@ -112,48 +70,9 @@ fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 	false
 }
 
-fn copy_command(fle: &PathBuf, dest: PathBuf, overwrite: bool) {
-	println!("performing copy: xcopy {:?}", &[fle.to_str().unwrap(), dest.to_str().unwrap(), {match overwrite{ true => "/Y", false => ""}}]);
-	let res = match Command::new("xcopy").args(&[fle.to_str().unwrap(), dest.to_str().unwrap(), {match overwrite{ true => "/Y", false => ""}}]).output() {
-		Ok(res) => res, 
-		Err(ex) => { println!("{:?} exception.", ex); panic!(ex);}
-	};
-	println!("Copy results: {:?}", String::from_utf8_lossy(&res.stdout));
-}
-
-fn get_rust_lib_home() -> PathBuf {
-	env::home_dir().
-		unwrap().
-		join(".rustup").
-		join("toolchains").
-		join("stable-x86_64-pc-windows-msvc").
-		join("lib").
-		join("rustlib").
-		join("x86_64-pc-windows-msvc").
-		join("lib")
-}
-
-fn copy_c_lib() {
-	let p = Path::new(".\\clr_c_api\\x64\\");
-	let proj_name = "static_debug";
-	let fle_name = "clr_c_api.lib";
-	let p2 = p.join(proj_name).join(fle_name);
-	copy_command(&p2, get_rust_lib_home(), true);
-	copy_command(&p2, PathBuf::from("."), true);
-
-	let proj_name = "dylib_debug";
-	let fle_name = "clr_c_api.dll";
-	let p2 = p.join(proj_name).join(fle_name);
-	copy_command(&p2, get_rust_lib_home(), true);
-	copy_command(&p2, PathBuf::from("."), true);
-}
-
-
 fn main() {
-	let refresh = build_c_lib(Path::new(".\\clr_c_api\\clr_c_api\\"), vec!("cpp", "h", "def", "vcxproj"));
-	if refresh {
-		copy_c_lib();
-	}
+	let _refresh = build_c_lib(Path::new(".\\clr_c_api\\clr_c_api\\"), vec!("cpp", "h", "def", "vcxproj"));
+	
 	println!("cargo:rustc-link-lib=static=clr_c_api");
 	println!("cargo:rustc-link-search=static=.\\clr_c_api\\x64\\static_debug");
 }
