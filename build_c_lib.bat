@@ -19,6 +19,8 @@ echo on
 "%DEVENV%" %SOLUTION_PATH% /Clean dylib_debug /Project clr_c_api /out Clean_dylib_debug.log
 "%DEVENV%" %SOLUTION_PATH% /Build dylib_debug /Project clr_c_api /out Build_dylib_debug.log
 
+type Build_static_debug.log
+type Build_dylib_debug.log
 rem XCOPY .\clr_c_api\x64\static_debug\clr_c_api.lib %RUSTUP%\toolchains\%CHANNEL%-x86_%BITS%-pc-windows-msvc\lib\rustlib\x86_%BITS%-pc-windows-msvc\lib /Y
 rem XCOPY .\clr_c_api\x64\static_debug\clr_c_api.lib . /Y
 rem XCOPY .\clr_c_api\x64\dylib_debug\clr_c_api.dll %RUSTUP%\toolchains\%CHANNEL%-x86_%BITS%-pc-windows-msvc\lib\rustlib\x86_%BITS%-pc-windows-msvc\lib /Y
