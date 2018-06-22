@@ -47,16 +47,38 @@ extern "C" {
 	//typedef struct _Assembly _Assembly;
 
 
+	//ICLRMetaHost calls
 	CAPIResult CLRMetaHost_new();
-	CAPIResult CLRMetaHost_free(ICLRMetaHost* host);
 	CAPIResult CLRMetaHost_get_runtime(ICLRMetaHost* host, const char* version);
-	CAPIResult CLRRuntimeInfo_free(ICLRRuntimeInfo* info);
-	bool CLRRuntimeInfo_is_loadable(ICLRRuntimeInfo* info);
-	CAPIResult CLRRuntimeInfo_get_clr_runtime(ICLRRuntimeInfo* info);
-	CAPIResult CLRRuntimeHost_stop(ICLRRuntimeHost* host);
-	bool CLRRuntimeHost_start(ICLRRuntimeHost* host);
-	CAPIResult CLRRuntimeHost_load_assembly(ICLRRuntimeInfo * info, ICLRRuntimeHost* host, char* assemblyName);
-	CAPIResult Assembly_release(_Assembly* assembly);
+
+	//ICLRRuntimeInfo calls
+	bool       CLRRuntimeInfo_is_loadable(          ICLRRuntimeInfo* info);
+	bool       CLRRuntimeInfo_is_loaded(            ICLRRuntimeInfo* info);
+	bool       CLRRuntimeInfo_is_loaded_from_handle(ICLRRuntimeInfo* info, HANDLE* processHandle);
+	bool       CLRRuntimeInfo_is_started(           ICLRRuntimeInfo *info);
+	CAPIResult CLRRuntimeInfo_get_clr_runtime(      ICLRRuntimeInfo* info);
+	CAPIResult CLRRuntimeInfo_load_error_string(    ICLRRuntimeInfo* info, HRESULT hr);
+	CAPIResult CLRRuntimeInfo_load_library(         ICLRRuntimeInfo* info, const char* dllName);
+
+	//Utility method, to pair with CLRRuntimeInfo_load_error_string
+	CAPIResult CAPI_free_error_string(const char* err_string);
+
+	//ICLRRuntimeHost calls
+	CAPIResult CLRRuntimeHost_stop(         ICLRRuntimeHost* host);
+	bool       CLRRuntimeHost_start(        ICLRRuntimeHost* host);
+	CAPIResult CLRRuntimeHost_load_assembly(ICLRRuntimeHost* host, ICLRRuntimeInfo * info, const char* assemblyName);
+
+	//Assembly calls
+	CAPIResult Assembly_release( _Assembly* assembly);
+	CAPIResult Assembly_get_type(_Assembly* assembly, const char* typeName);
+	
+	//Type calls
+	CAPIResult Type_call_static_method(_Type* type, const char* methodName);
+	CAPIResult Type_create_instance(   _Type* type);
+
+	//.Net object instance calls
+	CAPIResult Object_invoke(void* vtObj, const char* methodName);
+	CAPIResult Object_free(  void* vtObj);
 #ifdef __cplusplus
 }
 #endif

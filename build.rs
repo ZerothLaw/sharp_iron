@@ -59,7 +59,8 @@ fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 	println!("build_c_lib: ({:?}, {:?})",  dir, extensions);
 	let timestamp_file = dir.join(".timestamps.json");
 	if do_build(timestamp_file, dir, extensions.clone()) {
-		let _bat_command = Command::new("call").args(&["build_c_lib.bat", ".\\clr_c_api\\clr_c_api.sln", "%USERPROFILE%\\.rustup", "stable", "64", ".\\clr_c_api\\x64\\"]).output();
+		println!("Calling build_c_lib.bat .\\clr_c_api\\clr_c_api.sln, %USERPROFILE%\\.rustup, stable, 64");
+		let _bat_command = Command::new("call").args(&["build_c_lib.bat", ".\\clr_c_api\\clr_c_api.sln", "%USERPROFILE%\\.rustup", "stable", "64"]).output();
 
 		let timestamps = get_timestamps(dir, extensions);
 		let timestamp_file = dir.join(".timestamps.json");
