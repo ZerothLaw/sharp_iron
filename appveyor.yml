@@ -119,4 +119,7 @@ build: false
 # environment variable.
 test_script:
   - build_c_lib.bat .\clr_c_api\clr_c_api.sln %USERPROFILE%\.rustup stable 64
+  - dir 
+  - dir .\clr_c_api\
+  - dir .\clr_c_api\clr_c_api\
   - cargo test --verbose %cargoflags%
