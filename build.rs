@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env;
 use std::ffi::OsString;
 use std::fs::{self, DirEntry, read_dir};
 use std::process::Command;
@@ -7,11 +8,21 @@ use std::time::SystemTime;
 
 extern crate serde_json;
 
-fn get_files(dir: &Path) -> Vec<DirEntry> {
+fn get_files(dir: &Path, extensions: Vec<&str>) -> Vec<DirEntry> {
 	if dir.is_dir() {
 		return match read_dir(dir) {
 			Ok(reader) => {
-				reader.map(|x| x.unwrap()) .collect()
+				reader.map(|x| x.unwrap()).filter(|x| {
+					let path = x.path();
+					if path.is_file() {
+						if let Some(ext) = path.extension() {
+							return extensions.iter().any(|extension| &OsString::from(extension) == ext);
+						}
+					}
+					
+					return false;
+					
+				}).collect()
 			}, 
 			_ => {Vec::new()}
 		};
@@ -21,17 +32,10 @@ fn get_files(dir: &Path) -> Vec<DirEntry> {
 
 fn get_timestamps(dir: &Path, extensions: Vec<&str>) -> HashMap<PathBuf, SystemTime> {
 	let mut timestamps = HashMap::new();
-	let files = get_files(dir);
+	let files = get_files(dir, extensions);
 	for file in files {
 		let filepath = file.path();
-		if filepath.is_file() {
-			let ext = &filepath.extension().unwrap();
-			for extension in &extensions {
-				if &OsString::from(extension) == ext {
-					timestamps.insert(filepath.clone(), file.metadata().unwrap().modified().unwrap());
-				}
-			}
-		}
+		timestamps.insert(filepath.clone(), file.metadata().unwrap().modified().unwrap());
 	}
 	timestamps
 }
@@ -43,14 +47,15 @@ fn do_build(timestamp_path: PathBuf, dir: &Path, extensions: Vec<&str>) -> bool 
 		let new_timestamps = get_timestamps(dir, extensions);
 		for key in original_timestamps.keys() {
 			if new_timestamps.contains_key(key) {
-				if new_timestamps.get(key).unwrap() != original_timestamps.get(key).unwrap() {
+				let new_sys_time = new_timestamps.get(key).unwrap();
+				let old_sys_time = original_timestamps.get(key).unwrap();
+				if  new_sys_time > old_sys_time {
 					return true;
 				}
 			}
 		}
 		return false;
 	}
-	
 	true
 }
 
@@ -59,9 +64,9 @@ fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 	println!("build_c_lib: ({:?}, {:?})",  dir, extensions);
 	let timestamp_file = dir.join(".timestamps.json");
 	if do_build(timestamp_file, dir, extensions.clone()) {
-		println!("Calling build_c_lib.bat .\\clr_c_api\\clr_c_api.sln, %USERPROFILE%\\.rustup, stable, 64");
-		let _bat_command = Command::new("call").args(&["build_c_lib.bat", ".\\clr_c_api\\clr_c_api.sln", "%USERPROFILE%\\.rustup", "stable", "64"]).output();
-
+		let out_dir = env::var("OUT_DIR").unwrap();
+		println!("Calling build_c_lib.bat stable 64 .\\clr_c_api\\x64\\ {} Debug", out_dir);
+		let _bat_command = Command::new("build_c_lib.bat").args(&["stable", "64", ".\\clr_c_api\\", &out_dir, "Debug"]).output().expect("build_c_lib.bat call failed!");
 		let timestamps = get_timestamps(dir, extensions);
 		let timestamp_file = dir.join(".timestamps.json");
 		let timestamp_file = fs::File::create(timestamp_file).unwrap();
@@ -73,7 +78,7 @@ fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 
 fn main() {
 	let _refresh = build_c_lib(Path::new(".\\clr_c_api\\clr_c_api\\"), vec!("cpp", "h", "def", "vcxproj"));
-	
-	println!("cargo:rustc-link-lib=static=clr_c_api");
-	println!("cargo:rustc-link-search=static=.\\clr_c_api\\x64\\static_debug");
+	let out_dir = env::var("OUT_DIR").unwrap();
+	println!("cargo:rustc-link-lib=clr_c_api");
+	println!("cargo:rustc-link-search={}", &out_dir);
 }

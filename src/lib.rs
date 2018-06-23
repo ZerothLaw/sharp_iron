@@ -11,7 +11,6 @@ struct CAPIResult {
 	c_ptr: *mut c_void
 }
 
-#[link(name="clr_c_api", kind="static")]
 extern "C" {
 	//CLRMetaHost functions
 	fn CLRMetaHost_new()                                                  -> CAPIResult;
@@ -166,25 +165,16 @@ impl CLRRuntimeHost {
 	}
 	
 	pub fn load_assembly(&mut self, runtime_info: CLRRuntimeInfo, assembly_name: &str) -> bool {
-		//println!("CLRRuntimeHost.load_assembly a");
 		if !self.started {
-			//println!("CLRRuntimeHost.load_assembly b");
 			self.start();
-			//println!("CLRRuntimeHost.load_assembly c");
 		}
 		let res = unsafe {
-			//println!("CLRRuntimeHost.load_assembly d");
 			let cs_assembly_name = CString::new(assembly_name).unwrap();
-			//println!("CLRRuntimeHost.load_assembly e");
 			CLRRuntimeHost_load_assembly(self.internal_ptr, runtime_info.internal_ptr, cs_assembly_name.as_ptr())
 		};
-		//print!("HRESULT is {:?}, ptr is {:?}", res.hr, res.c_ptr);
 		if res.ok {
-			//println!("CLRRuntimeHost.load_assembly g");
 			self.assemblies.push(Assembly::new(res.c_ptr));
-			//println!("CLRRuntimeHost.load_assembly h");
 		}
-		//println!("CLRRuntimeHost.load_assembly I");
 		return res.ok;
 	}
 }
@@ -232,18 +222,13 @@ mod tests {
 	//mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
 	#[test]
 	fn load_assembly() {
-		//println!("load_assembly a");
 		let host = CLRMetaHost::new();
-		//println!("load_assembly b");
 		let runtime_info = host.get_runtime_info("v4.0.30319");
-		//println!("load_assembly c");
 		let mut clr_host = match runtime_info.get_clr_host() {
 			Ok(new_host) => {/*println!("load_assembly c");*/ new_host}, 
 			Err(hr) => { panic!("call failed with HRESULT: {:?}", hr); }
 		};
-		//println!("load_assembly d");
 		let loaded_assembly = clr_host.load_assembly(runtime_info, "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
-		//println!("load_assembly e");
 		assert_eq!(loaded_assembly, true);
 	}
 }

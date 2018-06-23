@@ -44,6 +44,8 @@ extern "C" {
 	typedef struct ICLRRuntimeInfo ICLRRuntimeInfo;
 	typedef struct ICLRRuntimeHost ICLRRuntimeHost;
 	typedef struct ICorRuntimeHost ICorRuntimeHost;
+	typedef struct ICLRObject ICLRObject;
+	typedef struct ICLRType ICLRType;
 	//typedef struct _Assembly _Assembly;
 
 
@@ -74,7 +76,7 @@ extern "C" {
 	
 	//Type calls
 	CAPIResult Type_call_static_method(_Type* type, const char* methodName);
-	CAPIResult Type_create_instance(   _Type* type);
+	CAPIResult Type_create_instance(   _Type* type, void* args);
 
 	//.Net object instance calls
 	CAPIResult Object_invoke(void* vtObj, const char* methodName);
