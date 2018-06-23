@@ -62,13 +62,14 @@ fn do_build(timestamp_path: PathBuf, dir: &Path, extensions: Vec<&str>) -> bool 
 
 fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 	println!("build_c_lib: ({:?}, {:?})",  dir, extensions);
-	let timestamp_file = dir.join(".timestamps.json");
+	let out_dir = env::var("OUT_DIR").unwrap();
+	let path_dir = Path::new(&out_dir);
+	let timestamp_file = path_dir.join("timestamps.json");
 	if do_build(timestamp_file, dir, extensions.clone()) {
-		let out_dir = env::var("OUT_DIR").unwrap();
 		println!("Calling build_c_lib.bat stable 64 .\\clr_c_api\\x64\\ {} Debug", out_dir);
 		let _bat_command = Command::new("build_c_lib.bat").args(&["stable", "64", ".\\clr_c_api\\", &out_dir, "Debug"]).output().expect("build_c_lib.bat call failed!");
 		let timestamps = get_timestamps(dir, extensions);
-		let timestamp_file = dir.join(".timestamps.json");
+		let timestamp_file = path_dir.join("timestamps.json");
 		let timestamp_file = fs::File::create(timestamp_file).unwrap();
 		serde_json::to_writer(timestamp_file, &timestamps).unwrap();
 		return true;
