@@ -38,6 +38,7 @@ extern "C" {
 		HRESULT hr; 
 		bool ok;
 		void* c_ptr;
+		wchar_t* ws_ptr;
 	};
 
 	typedef struct ICLRMetaHost ICLRMetaHost;

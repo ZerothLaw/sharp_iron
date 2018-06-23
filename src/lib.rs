@@ -1,14 +1,20 @@
 extern crate libc;
 extern crate winapi;
-use winapi::ctypes::{c_void, c_char};
-use winapi::shared::winerror::HRESULT;
+use winapi::ctypes::{c_void, c_char, wchar_t };
+use winapi::shared::winerror::{HRESULT, E_POINTER};
+use winapi::shared::ntdef::HANDLE;
+use std::ptr;
 use std::ffi::CString;
+
+extern crate widestring;
+use widestring::{WideString};
 
 #[repr(C)]
 struct CAPIResult {
 	hr: HRESULT, 
 	ok: bool, 
-	c_ptr: *mut c_void
+	c_ptr: *mut c_void, 
+	ws_ptr: *mut u16
 }
 
 extern "C" {
@@ -22,7 +28,7 @@ extern "C" {
 	fn CLRRuntimeInfo_is_loaded_from_handle(runtime_info: *mut c_void, process_handle: *mut c_void) -> bool;
 	fn CLRRuntimeInfo_is_started(runtime_info: *mut c_void) -> bool;
 	fn CLRRuntimeInfo_get_clr_runtime(runtime_info: *mut c_void) -> CAPIResult;
-	fn CLRRuntimeInfo_load_error_string(runtime_info: *mut c_void, hr: HRESULT);
+	fn CLRRuntimeInfo_load_error_string(runtime_info: *mut c_void, hr: HRESULT) -> CAPIResult;
 	fn CLRRuntimeInfo_load_library(runtime_info: *mut c_void, dll_name: *const c_char) -> CAPIResult;
 	
 	//utility method
@@ -51,32 +57,29 @@ pub struct CLRMetaHost {
 	internal_ptr: *mut c_void 
 }
 
-
 impl CLRMetaHost {
 	pub fn new() -> CLRMetaHost {
-		unsafe {
-			let res = CLRMetaHost_new();
-			let ptr = match res.ok {
-				true => res.c_ptr, 
-				false => { panic!("CLRMetaHost::new call failed with HRESULT: {:?}", res.hr); }
-			};
-			assert!(!ptr.is_null());
-			CLRMetaHost{ internal_ptr: ptr }
-		}
+		let res = unsafe {CLRMetaHost_new()};
+		
+		let ptr = match res.ok {
+			true => res.c_ptr, 
+			false => { panic!("CLRMetaHost::new call failed with HRESULT: {:?}", res.hr); }
+		};
+		assert!(!ptr.is_null());
+		CLRMetaHost{ internal_ptr: ptr }
+		
 	}
 	
 	pub fn get_runtime_info(&self, version: &str) -> CLRRuntimeInfo {
 		assert!(!self.is_null());
-		unsafe {
-			let cs_version = CString::new(version).unwrap();
-			let res = CLRMetaHost_get_runtime(self.internal_ptr, cs_version.as_ptr());
-			let ptr = match res.ok {
-				true => res.c_ptr, 
-				false => {panic!("get_runtime_info call failed with HRESULT: {:?}", res.hr);}
-			};
-			assert!(!ptr.is_null());
-			CLRRuntimeInfo::new(ptr)
-		}
+		let cs_version = CString::new(version).unwrap();
+		let res = unsafe { CLRMetaHost_get_runtime(self.internal_ptr, cs_version.as_ptr()) };
+		let ptr = match res.ok {
+			true => res.c_ptr, 
+			false => {panic!("get_runtime_info call failed with HRESULT: {:?}", res.hr);}
+		};
+		assert!(!ptr.is_null());
+		CLRRuntimeInfo::new(ptr)
 	}
 	
 	pub fn is_null(&self) -> bool {
@@ -103,18 +106,45 @@ impl Drop for Assembly {
 
 #[repr(C)]
 pub struct CLRRuntimeInfo {
-	internal_ptr: *mut c_void
+	internal_ptr: *mut c_void,
+	loaded: bool, 
+	loadable: bool, 
+	started: bool
 }
 
 impl CLRRuntimeInfo {
 	pub fn new(ptr: *mut c_void) -> CLRRuntimeInfo {
 		CLRRuntimeInfo {
-			internal_ptr: ptr
+			internal_ptr: ptr, 
+			loaded: false, 
+			loadable: false, 
+			started: false
 		}
 	}
-	pub fn is_loadable(&self) -> bool {
+	pub fn is_loadable(&mut self) -> bool {
+		if !self.loadable {
+			self.loadable = unsafe { CLRRuntimeInfo_is_loadable(self.internal_ptr)};
+		}
+		self.loadable
+	}
+	
+	pub fn is_loaded(&mut self) -> bool {
+		if !self.loaded {
+			self.loaded = unsafe { CLRRuntimeInfo_is_loaded(self.internal_ptr) };
+		}
+		self.loaded
+	}
+	
+	pub fn is_started(&mut self) -> bool {
+		if !self.started {
+			self.started = unsafe {CLRRuntimeInfo_is_started(self.internal_ptr)};
+		}
+		self.started
+	}
+	
+	pub fn is_loaded_from_handle(&mut self, process_handle: HANDLE) -> bool {
 		unsafe {
-			CLRRuntimeInfo_is_loadable(self.internal_ptr)
+			CLRRuntimeInfo_is_loaded_from_handle(self.internal_ptr, process_handle)
 		}
 	}
 	
@@ -127,6 +157,16 @@ impl CLRRuntimeInfo {
 			false => Err(res.hr)
 		}
 	}	
+	
+	pub fn get_error_string(&self, hr: HRESULT) -> Result<WideString, String> {
+		let result = unsafe {CLRRuntimeInfo_load_error_string(self.internal_ptr, hr) };
+		match result.ok {
+			true => {
+				Ok( unsafe {WideString::from_ptr(result.ws_ptr, result.hr as usize) })
+			}, 
+			false => Err("Couldn't load the resource string. Check that you have the correct library or DLL loaded into memory first.".to_string())
+		}
+	}
 	
 	pub fn is_null(&self) -> bool {
 		self.internal_ptr.is_null()
@@ -168,8 +208,8 @@ impl CLRRuntimeHost {
 		if !self.started {
 			self.start();
 		}
+		let cs_assembly_name = CString::new(assembly_name).unwrap();
 		let res = unsafe {
-			let cs_assembly_name = CString::new(assembly_name).unwrap();
 			CLRRuntimeHost_load_assembly(self.internal_ptr, runtime_info.internal_ptr, cs_assembly_name.as_ptr())
 		};
 		if res.ok {
@@ -192,7 +232,7 @@ mod tests {
 	#[test]
 	fn runtime_info() {
 		let host = CLRMetaHost::new();
-		let runtime_info = host.get_runtime_info("v4.0.30319");
+		let mut runtime_info = host.get_runtime_info("v4.0.30319");
 		assert_eq!(runtime_info.is_null(), false);
 		assert_eq!(runtime_info.is_loadable(), true);
 	}
@@ -228,7 +268,9 @@ mod tests {
 			Ok(new_host) => {/*println!("load_assembly c");*/ new_host}, 
 			Err(hr) => { panic!("call failed with HRESULT: {:?}", hr); }
 		};
+		
 		let loaded_assembly = clr_host.load_assembly(runtime_info, "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
 		assert_eq!(loaded_assembly, true);
+		
 	}
 }
