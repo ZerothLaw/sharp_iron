@@ -1,6 +1,6 @@
 REM echo off
 REM build c_lib batch file
-REM example call: build_c_lib.bat stable 64 .\clr_c_api\x64\ %OUT_DIR% Debug
+REM example call: build_c_lib.bat stable 64 .\clr_c_api %OUT_DIR% Debug
 
 set CHANNEL=%1
 set BITS=%2
@@ -21,6 +21,7 @@ echo on
 
 "%DEVENV%" %SOLUTION_PATH% /Clean "%MODE%|%SUB_MODE%" /out clean_debug.log
 "%DEVENV%" %SOLUTION_PATH% /Build "%MODE%|%SUB_MODE%" /out build_debug.log
+msbuild /p:Configuration=Debug;Platform=x64 %SOLUTION_PATH%
 
 type clean_debug.log
 type build_debug.log
