@@ -120,4 +120,4 @@ build: false
 test_script:
   - dir 
   #- build_c_lib.bat stable 64 .\clr_c_api\x64\ %OUT_DIR% Debug 
-  - cargo test --verbose %cargoflags%
+  - cargo test --verbose %cargoflags% -- --nocapture
