@@ -23,8 +23,5 @@ echo on
 "%DEVENV%" %SOLUTION_PATH% /Build "%MODE%|%SUB_MODE%" /out build_debug.log
 msbuild /p:Configuration=Debug;Platform=x64 %SOLUTION_PATH%
 
-type clean_debug.log
-type build_debug.log
-
 XCOPY %PROJECT_DIR%\%SUB_MODE%\%MODE%\clr_c_api.lib %OUT_DIR% /Y
 XCOPY %PROJECT_DIR%\%SUB_MODE%\%MODE%\clr_c_api.dll %OUT_DIR% /Y

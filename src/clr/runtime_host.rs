@@ -11,16 +11,16 @@ use clr::assembly::Assembly;
 use clr::c_api::CLRRuntimeHost_stop;
 use clr::c_api::CLRRuntimeHost_start;
 use clr::c_api::CLRRuntimeHost_load_assembly;
-use clr::runtime_info::CLRRuntimeInfo;
+use clr::runtime_info::RuntimeInfo;
 
 #[repr(C)]
-pub struct CLRRuntimeHost {
+pub struct RuntimeHost {
 	pub internal_ptr: *mut c_void,
 	started: bool, 
 	assemblies: Vec<Assembly>
 }
 
-impl Drop for CLRRuntimeHost {
+impl Drop for RuntimeHost {
 	fn drop(&mut self) {
 		if self.started {
 			unsafe {
@@ -30,9 +30,9 @@ impl Drop for CLRRuntimeHost {
 	}
 }
 
-impl CLRRuntimeHost {
-	pub fn new(c_ptr: *mut c_void) -> CLRRuntimeHost {
-		CLRRuntimeHost{internal_ptr: c_ptr, started: false, assemblies: Vec::new()}
+impl RuntimeHost {
+	pub fn new(c_ptr: *mut c_void) -> RuntimeHost {
+		RuntimeHost{internal_ptr: c_ptr, started: false, assemblies: Vec::new()}
 	}
 	pub fn start(&mut self) -> bool {
 		if !self.started {
@@ -47,7 +47,7 @@ impl CLRRuntimeHost {
 		self.internal_ptr.is_null()
 	}
 	
-	pub fn load_assembly(&mut self, runtime_info: CLRRuntimeInfo, assembly_name: &str) -> bool {
+	pub fn load_assembly(&mut self, runtime_info: RuntimeInfo, assembly_name: &str) -> bool {
 		if !self.started {
 			self.start();
 		}

@@ -41,6 +41,21 @@ extern "C" {
 		wchar_t* ws_ptr;
 	};
 
+	inline CAPIResult new_result(bool ok = false, HRESULT hr = E_POINTER)
+	{
+		CAPIResult result;
+		result.ok = ok;
+		result.hr = hr;
+		return result;
+	}
+	
+	inline wchar_t* string_to_lpcwstr(const char* text) {
+		int iLen = MultiByteToWideChar(CP_ACP, 0, text, -1, 0, 0);
+		wchar_t* wc_text = SysAllocStringLen(0, iLen);
+		MultiByteToWideChar(CP_ACP, 0, text, -1, wc_text, iLen);
+		return wc_text;
+	}
+
 	typedef struct ICLRMetaHost ICLRMetaHost;
 	typedef struct ICLRRuntimeInfo ICLRRuntimeInfo;
 	typedef struct ICLRRuntimeHost ICLRRuntimeHost;

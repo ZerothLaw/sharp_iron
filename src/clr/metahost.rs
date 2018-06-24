@@ -6,31 +6,30 @@ use std::ffi::CString;
 use winapi::ctypes::{c_void};
 
 //self
-// use clr::c_api::CAPIResult;
 use clr::c_api::CLRMetaHost_new;
 use clr::c_api::CLRMetaHost_get_runtime;
-use clr::runtime_info::CLRRuntimeInfo;
+use clr::runtime_info::RuntimeInfo;
 
 //body
 #[repr(C)]
-pub struct CLRMetaHost {
+pub struct MetaHost {
 	internal_ptr: *mut c_void 
 }
 
-impl CLRMetaHost {
-	pub fn new() -> CLRMetaHost {
+impl MetaHost {
+	pub fn new() -> MetaHost {
 		let res = unsafe {CLRMetaHost_new()};
 		
 		let ptr = match res.ok {
 			true => res.c_ptr, 
-			false => { panic!("CLRMetaHost::new call failed with HRESULT: {:?}", res.hr); }
+			false => { panic!("MetaHost::new call failed with HRESULT: {:?}", res.hr); }
 		};
 		assert!(!ptr.is_null());
-		CLRMetaHost{ internal_ptr: ptr }
+		MetaHost{ internal_ptr: ptr }
 		
 	}
 	
-	pub fn get_runtime_info(&self, version: &str) -> CLRRuntimeInfo {
+	pub fn get_runtime_info(&self, version: &str) -> RuntimeInfo {
 		assert!(!self.is_null());
 		let cs_version = CString::new(version).unwrap();
 		let res = unsafe { CLRMetaHost_get_runtime(self.internal_ptr, cs_version.as_ptr()) };
@@ -39,7 +38,7 @@ impl CLRMetaHost {
 			false => {panic!("get_runtime_info call failed with HRESULT: {:?}", res.hr);}
 		};
 		assert!(!ptr.is_null());
-		CLRRuntimeInfo::new(ptr)
+		RuntimeInfo::new(ptr)
 	}
 	
 	pub fn is_null(&self) -> bool {

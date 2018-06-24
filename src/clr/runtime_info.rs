@@ -8,7 +8,6 @@ use winapi::shared::winerror::HRESULT;
 use winapi::shared::ntdef::HANDLE;
 
 //self
-// use clr::c_api::CAPIResult;
 use clr::c_api::CLRRuntimeInfo_is_loadable;
 use clr::c_api::CLRRuntimeInfo_is_loaded;
 use clr::c_api::CLRRuntimeInfo_is_started;
@@ -17,20 +16,20 @@ use clr::c_api::CLRRuntimeInfo_get_clr_runtime;
 use clr::c_api::CLRRuntimeInfo_load_error_string;
 
 //self.structs
-use clr::runtime_host::CLRRuntimeHost;
+use clr::runtime_host::RuntimeHost;
 
 
 #[repr(C)]
-pub struct CLRRuntimeInfo {
+pub struct RuntimeInfo {
 	pub internal_ptr: *mut c_void,
 	loaded: bool, 
 	loadable: bool, 
 	started: bool
 }
 
-impl CLRRuntimeInfo {
-	pub fn new(ptr: *mut c_void) -> CLRRuntimeInfo {
-		CLRRuntimeInfo {
+impl RuntimeInfo {
+	pub fn new(ptr: *mut c_void) -> RuntimeInfo {
+		RuntimeInfo {
 			internal_ptr: ptr, 
 			loaded: false, 
 			loadable: false, 
@@ -64,12 +63,12 @@ impl CLRRuntimeInfo {
 		}
 	}
 	
-	pub fn get_clr_host(&self) -> Result<CLRRuntimeHost, HRESULT> {
+	pub fn get_clr_host(&self) -> Result<RuntimeHost, HRESULT> {
 		let res = unsafe {
 			CLRRuntimeInfo_get_clr_runtime(self.internal_ptr)
 		};
 		match res.ok {
-			true => Ok(CLRRuntimeHost::new(res.c_ptr)), 
+			true => Ok(RuntimeHost::new(res.c_ptr)), 
 			false => Err(res.hr)
 		}
 	}	
