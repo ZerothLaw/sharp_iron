@@ -119,5 +119,5 @@ build: false
 # environment variable.
 test_script:
   - dir 
-  build_c_lib.bat stable 64 .\clr_c_api\ . Debug 
+  - build_c_lib.bat stable 64 .\clr_c_api\ . Debug 
   - cargo test --verbose %cargoflags% -- --nocapture
