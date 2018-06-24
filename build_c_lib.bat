@@ -22,5 +22,7 @@ echo on
 "%DEVENV%" %SOLUTION_PATH% /Clean "%MODE%|%SUB_MODE%" /out clean_debug.log
 "%DEVENV%" %SOLUTION_PATH% /Build "%MODE%|%SUB_MODE%" /out build_debug.log
 
+dir .\clr_c_api\
+
 XCOPY %PROJECT_DIR%\%SUB_MODE%\%MODE%\clr_c_api.lib %OUT_DIR% /Y
 XCOPY %PROJECT_DIR%\%SUB_MODE%\%MODE%\clr_c_api.dll %OUT_DIR% /Y
