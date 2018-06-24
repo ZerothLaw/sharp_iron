@@ -54,7 +54,7 @@ fn do_build(timestamp_path: PathBuf, dir: &Path, extensions: Vec<&str>) -> bool 
 				}
 			}
 		}
-		return false; 	
+		return false;
 	}
 	true
 }
