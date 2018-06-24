@@ -54,11 +54,10 @@ fn do_build(timestamp_path: PathBuf, dir: &Path, extensions: Vec<&str>) -> bool 
 				}
 			}
 		}
-		return true; 	
+		return false; 	
 	}
 	true
 }
-
 
 fn build_c_lib( dir: &Path, extensions: Vec<&str>) -> bool{
 	println!("build_c_lib: ({:?}, {:?})",  dir, extensions);

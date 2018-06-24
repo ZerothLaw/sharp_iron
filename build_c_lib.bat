@@ -1,4 +1,4 @@
-echo off
+REM echo off
 REM build c_lib batch file
 REM example call: build_c_lib.bat stable 64 .\clr_c_api\x64\ %OUT_DIR% Debug
 
@@ -17,7 +17,7 @@ for /f "tokens=*" %%i in ('call "%ProgramFiles(x86)%\Microsoft Visual Studio\Ins
 
 set VSMSBUILDCMD="%DEVENV:IDE\devenv.exe=Tools\VsMSBuildCmd.bat%"
 call %VSMSBUILDCMD%
-REM echo on
+echo on
 
 "%DEVENV%" %SOLUTION_PATH% /Clean "%MODE%|%SUB_MODE%" /out clean_debug.log
 "%DEVENV%" %SOLUTION_PATH% /Build "%MODE%|%SUB_MODE%" /out build_debug.log
