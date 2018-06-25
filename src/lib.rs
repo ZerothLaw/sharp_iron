@@ -5,7 +5,6 @@ extern crate widestring;
 mod clr;
 use clr::MetaHost;
 
-
 #[cfg(test)]
 mod tests {
 	use super::*;

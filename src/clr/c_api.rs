@@ -12,6 +12,11 @@ pub struct CAPIResult {
 }
 
 type CLRMetaHost = *mut c_void;
+type CLRRuntimeInfo = *mut c_void;
+type CLRRuntimeHost = *mut c_void;
+type CLRAssembly = *mut c_void;
+type CLRType = *mut c_void;
+type CLRObject = *mut c_void;
 
 extern "C" {
 	//CLRMetaHost functions

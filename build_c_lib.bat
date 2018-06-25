@@ -1,4 +1,4 @@
-REM echo off
+echo off
 REM build c_lib batch file
 REM example call: build_c_lib.bat stable 64 .\clr_c_api %OUT_DIR% Debug
 
