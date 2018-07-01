@@ -1,9 +1,19 @@
+/*
+	Design comments. 
+	 Wrap CLR Unmanaged Hosting API classes/structs with FFI vtables (like winapi)
+	 then wrap them with a safe interface
+*/
+
 extern crate libc;
+#[macro_use]
 extern crate winapi;
 extern crate widestring;
 
+#[allow(non_snake_case, dead_code)]
 mod clr;
-use clr::MetaHost;
+pub use clr::MetaHost;
+pub use clr::RuntimeInfo;
+pub use clr::RuntimeHost;
 
 #[cfg(test)]
 mod tests {
@@ -43,20 +53,42 @@ mod tests {
 			Err(hr) => { panic!("call failed with HRESULT: {:?}", hr); }
 		};
 		assert_eq!(clr_host.start(), true);
+		
+		//println!("AppDomainId = {}", clr_host.get_current_app_domain_id());
 	}
-	//TestAssembly, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c97610437c81cba6
-	//mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+
 	#[test]
-	fn load_assembly() {
+	fn get_app_domain() { 
 		let host = MetaHost::new();
 		let runtime_info = host.get_runtime_info("v4.0.30319");
 		let mut clr_host = match runtime_info.get_clr_host() {
-			Ok(new_host) => {/*println!("load_assembly c");*/ new_host}, 
+			Ok(new_host) => new_host, 
 			Err(hr) => { panic!("call failed with HRESULT: {:?}", hr); }
 		};
+		assert_eq!(clr_host.start(), true);
+		let host = clr_host.get_host_control();
+		let domain_manager = host.get_domain_manager();
+	
+		unsafe {
+			let domain = domain_manager.app_domain();
+			println!("{:?}", domain);
+		}
 		
-		let loaded_assembly = clr_host.load_assembly(runtime_info, "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
-		assert_eq!(loaded_assembly, true);
-		
+		//println!("AppDomainId = {}", clr_host.get_current_app_domain_id());
 	}
+	//TestAssembly, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c97610437c81cba6
+	//mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// #[test]
+	// fn load_assembly() {
+		// let host = MetaHost::new();
+		// let runtime_info = host.get_runtime_info("v4.0.30319");
+		// let mut clr_host = match runtime_info.get_clr_host() {
+			// Ok(new_host) => {/*println!("load_assembly c");*/ new_host}, 
+			// Err(hr) => { panic!("call failed with HRESULT: {:?}", hr); }
+		// };
+		
+		// let loaded_assembly = clr_host.load_assembly(runtime_info, "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+		// assert_eq!(loaded_assembly, true);
+		
+	// }
 }

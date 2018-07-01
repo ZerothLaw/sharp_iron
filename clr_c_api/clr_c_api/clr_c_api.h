@@ -3,100 +3,57 @@
 #ifdef __cplusplus
 #pragma comment(lib, "mscoree.lib")
 #import <mscorlib.tlb> high_property_prefixes("_get","_put","_putref") rename("value","val") rename("or", "ORR") rename("ReportEvent", "InteropServices_ReportEvent") raw_interfaces_only no_smart_pointers
+#include <comdef.h>
 
 using namespace mscorlib;
+#import "RustAppDomainManager.tlb" raw_interfaces_only
+using namespace RustAppDomainManager;
+#define RUST_APP_DOMAIN_MANAGER_GUID_STR "B47320A6-6265-4C34-90AC-3FF2A909686C"
+DEFINE_GUID(RUST_APP_DOMAIN_MANAGER_GUID,
+	0xB47320A6, 0x6265, 0x4C34, 0x90, 0xAC, 0x3F, 0xF2, 0xA9, 0x09, 0x68, 0x6C);
 
-#define FACADE_GUID_STR "C5774F7F-8E4F-477D-BA87-F27429D7CB46"
-DEFINE_GUID(FACADE_GUID ,
-	0xc5774f7f, 0x8e4f, 0x477d, 0xba, 0x87, 0xf2, 0x74, 0x29, 0xd7, 0xcb, 0x46);
 
-struct __declspec(uuid(FACADE_GUID_STR)) FacadeInterface;
-struct FacadeInterface : IUnknown {
-	virtual HRESULT __stdcall Run(LPWSTR name, LPWSTR* result) = 0;
-};
 
-class FacadeHostControl : IHostControl {
+#define RUST_HOST_CONTROL_GUID_STR "1E20D486-67C7-4CD6-B56B-41D2297D5B2F"
+DEFINE_GUID(RUST_HOST_CONTROL_GUID,
+	0x1e20d486, 0x67c7, 0x4cd6, 0xb5, 0x6b, 0x41, 0xd2, 0x29, 0x7d, 0x5b, 0x2f);
+
+
+
+
+extern "C" {
+#endif
+
+	class __declspec(uuid(RUST_HOST_CONTROL_GUID_STR)) IRustHostControl : public IHostControl {
+		virtual ICustomAppDomainManager* GetDomainManager() = 0;
+	};
+
+	inline wchar_t* string_to_lpcwstr(const char* text) {
+		int iLen = MultiByteToWideChar(CP_ACP, 0, text, -1, 0, 0);
+		BSTR bs_text = SysAllocStringLen(0, iLen);
+		MultiByteToWideChar(CP_ACP, 0, text, -1, bs_text, iLen);
+		return bs_text;
+	}
+	
+	IRustHostControl* RustHostControl_new();
+
+	_AppDomain* AppDomainManager_get_app_domain(ICustomAppDomainManager* appManager);
+
+#ifdef __cplusplus
+}
+#endif
+
+class RustHostControl : public IRustHostControl {
 public:
-	FacadeHostControl();
-	virtual ~FacadeHostControl();
-	FacadeInterface* GetFacade();
 	HRESULT __stdcall QueryInterface(const IID &iid, void **ppv);
 	ULONG __stdcall AddRef();
 	ULONG __stdcall Release();
 	HRESULT __stdcall GetHostManager(REFIID id, void **ppHostManager);
 	HRESULT __stdcall SetAppDomainManager(DWORD dwAppDomainID, IUnknown* pUnkAppDomainManager);
-
+	RustHostControl();
+	virtual ~RustHostControl();
+	ICustomAppDomainManager* GetDomainManager();
 private:
 	long refCount_m;
-	FacadeInterface* defaultDomainManager_m;
+	ICustomAppDomainManager* defaultDomainManager_m;
 };
-
-extern "C" {
-#endif
-
-	struct CAPIResult {
-		HRESULT hr; 
-		bool ok;
-		void* c_ptr;
-		wchar_t* ws_ptr;
-	};
-
-	inline CAPIResult new_result(bool ok = false, HRESULT hr = E_POINTER)
-	{
-		CAPIResult result;
-		result.ok = ok;
-		result.hr = hr;
-		return result;
-	}
-	
-	inline wchar_t* string_to_lpcwstr(const char* text) {
-		int iLen = MultiByteToWideChar(CP_ACP, 0, text, -1, 0, 0);
-		wchar_t* wc_text = SysAllocStringLen(0, iLen);
-		MultiByteToWideChar(CP_ACP, 0, text, -1, wc_text, iLen);
-		return wc_text;
-	}
-
-	typedef struct ICLRMetaHost ICLRMetaHost;
-	typedef struct ICLRRuntimeInfo ICLRRuntimeInfo;
-	typedef struct ICLRRuntimeHost ICLRRuntimeHost;
-	typedef struct ICorRuntimeHost ICorRuntimeHost;
-	typedef struct ICLRObject ICLRObject;
-	typedef struct ICLRType ICLRType;
-	//typedef struct _Assembly _Assembly;
-
-
-	//ICLRMetaHost calls
-	CAPIResult CLRMetaHost_new();
-	CAPIResult CLRMetaHost_get_runtime(ICLRMetaHost* host, const char* version);
-
-	//ICLRRuntimeInfo calls
-	bool       CLRRuntimeInfo_is_loadable(          ICLRRuntimeInfo* info);
-	bool       CLRRuntimeInfo_is_loaded(            ICLRRuntimeInfo* info);
-	bool       CLRRuntimeInfo_is_loaded_from_handle(ICLRRuntimeInfo* info, HANDLE* processHandle);
-	bool       CLRRuntimeInfo_is_started(           ICLRRuntimeInfo *info);
-	CAPIResult CLRRuntimeInfo_get_clr_runtime(      ICLRRuntimeInfo* info);
-	CAPIResult CLRRuntimeInfo_load_error_string(    ICLRRuntimeInfo* info, HRESULT hr);
-	CAPIResult CLRRuntimeInfo_load_library(         ICLRRuntimeInfo* info, const char* dllName);
-
-	//Utility method, to pair with CLRRuntimeInfo_load_error_string
-	CAPIResult CAPI_free_error_string(const char* err_string);
-
-	//ICLRRuntimeHost calls
-	CAPIResult CLRRuntimeHost_stop(         ICLRRuntimeHost* host);
-	bool       CLRRuntimeHost_start(        ICLRRuntimeHost* host);
-	CAPIResult CLRRuntimeHost_load_assembly(ICLRRuntimeHost* host, ICLRRuntimeInfo * info, const char* assemblyName);
-
-	//Assembly calls
-	CAPIResult Assembly_release( _Assembly* assembly);
-	CAPIResult Assembly_get_type(_Assembly* assembly, const char* typeName);
-	
-	//Type calls
-	CAPIResult Type_call_static_method(_Type* type, const char* methodName);
-	CAPIResult Type_create_instance(   _Type* type, void* args);
-
-	//.Net object instance calls
-	CAPIResult Object_invoke(void* vtObj, const char* methodName);
-	CAPIResult Object_free(  void* vtObj);
-#ifdef __cplusplus
-}
-#endif
