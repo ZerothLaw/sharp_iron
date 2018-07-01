@@ -19,127 +19,105 @@ use clr::field::MemberTypes;
 
 #[repr(C)]
 pub enum MethodImplAttributes {
-    MethodImplAttributes_CodeTypeMask = 3,
-    MethodImplAttributes_IL = 0,
-    MethodImplAttributes_Native = 1,
-    MethodImplAttributes_OPTIL = 2,
-    MethodImplAttributes_Runtime = -3,
-    MethodImplAttributes_ManagedMask = 4,
-    MethodImplAttributes_Unmanaged = -4,
-    MethodImplAttributes_Managed = -1,
-    MethodImplAttributes_ForwardRef = 16,
-    MethodImplAttributes_PreserveSig = 128,
-    MethodImplAttributes_InternalCall = 4096,
-    MethodImplAttributes_Synchronized = 32,
-    MethodImplAttributes_NoInlining = 8,
-    MethodImplAttributes_NoOptimization = 64,
-    MethodImplAttributes_MaxMethodImplVal = 65535
+    CodeTypeMask = 3,
+    IL = 0,
+    Native = 1,
+    OPTIL = 2,
+    Runtime = -3,
+    ManagedMask = 4,
+    Unmanaged = -4,
+    Managed = -1,
+    ForwardRef = 16,
+    PreserveSig = 128,
+    InternalCall = 4096,
+    Synchronized = 32,
+    NoInlining = 8,
+    NoOptimization = 64,
+    MaxMethodImplVal = 65535
 }
+add_uuid!(MethodImplAttributes, 0xbcab3a5d, 0xf2cd, 0x3c69,0x84, 0x1d, 0xad, 0x00, 0x19, 0x69, 0xbf, 0x50);
 
-impl Interface for MethodImplAttributes {
-    #[inline]
-    fn uuidof() -> GUID {
-        GUID{
-            Data1: 0xbcab3a5d,
-            Data2: 0xf2cd,
-            Data3: 0x3c69,
-            Data4: [0x84, 0x1d, 0xad, 0x00, 0x19, 0x69, 0xbf, 0x50],
-        }
-    }
-}
-
-
+#[repr(C)]
 pub struct RuntimeMethodHandle
 {
     m_value: *mut IUnknown,
 }
-
-impl Interface for RuntimeMethodHandle {
-    #[inline]
-    fn uuidof() -> GUID {
-        GUID{
-            Data1: 0xf8fc5d7c,
-            Data2: 0x8215,
-            Data3: 0x3e65,
-            Data4: [0xbe, 0xfb, 0x11, 0xe8, 0x17, 0x26, 0x06, 0xfe],
-        }
-    }
-}
+add_uuid!(RuntimeMethodHandle, 0xf8fc5d7c, 0x8215, 0x3e65, 0xbe, 0xfb, 0x11, 0xe8, 0x17, 0x26, 0x06, 0xf);
 
 RIDL!{#[uuid(0xffcc1b5d, 0xecb8, 0x38dd, 0x9b, 0x01, 0x3d, 0xc8, 0xab, 0xc2, 0xaa, 0x5f)]
 interface _MethodInfo(_MethodInfoVtbl): IUnknown(IUnknownVtbl){
-    fn GetTypeInfoCount(
-        pcTInfo: *mut ULONG,
+    fn get_type_info_count(
+        pc_t_info: *mut ULONG,
     ) -> HRESULT,
-    fn GetTypeInfo(
-        iTInfo: ULONG, 
+    fn get_type_info(
+        i_t_info: ULONG, 
         lcid: ULONG,
-        ppTInfo: c_long,
+        pp_t_info: c_long,
     ) -> HRESULT,
-    fn GetIDsOfNames(
+    fn get_ids_of_names(
         riid: *mut GUID,
-        rgszNames: c_long, 
-        cNames: ULONG, 
+        rgsz_names: c_long, 
+        c_names: ULONG, 
         lcid: ULONG, 
-        rgDispId: c_long,
+        rg_disp_id: c_long,
     ) -> HRESULT,
-    fn Invoke(
-        dispIdMember: ULONG, 
+    fn invoke(
+        disp_id_member: ULONG, 
         riid: *mut GUID, 
         lcid: ULONG, 
-        wFlags: c_short,
-        pDispParams: c_long, 
-        pVarResult: c_long, 
-        pExcepInfo: c_long, 
-        puArgErr: c_long,
+        w_flags: c_short,
+        p_disp_params: c_long, 
+        p_var_result: c_long, 
+        p_excep_info: c_long, 
+        pu_arg_err: c_long,
     ) -> HRESULT,
-    fn get_ToString(
-        pRetVal: *mut BSTR, 
+    fn to_string(
+        p_ret_val: *mut BSTR, 
     ) -> HRESULT, 
-    fn Equals(
+    fn equals(
         other: VARIANT, 
-        pRetVal: *mut VARIANT_BOOL,
+        p_ret_val: *mut VARIANT_BOOL,
     ) -> HRESULT,
-    fn GetHashCode(
-        pRetVal: *mut c_long,
+    fn get_hash_code(
+        p_ret_val: *mut c_long,
     ) -> HRESULT,
-    fn GetType(
-        pRetVal: *mut *mut _Type,
+    fn get_type(
+        p_ret_val: *mut *mut _Type,
     ) -> HRESULT,
-    fn get_MemberType(
-        pRetVal: *mut MemberTypes,
+    fn get_member_type(
+        p_ret_val: *mut MemberTypes,
     ) -> HRESULT,
     fn get_name(
-        pRetVal: *mut BSTR,
+        p_ret_val: *mut BSTR,
     ) -> HRESULT,
-    fn get_DeclaringType(
-        pRetVal: *mut *mut _Type,
+    fn get_declaring_type(
+        p_ret_val: *mut *mut _Type,
     ) -> HRESULT,
-    fn get_ReflectedType(
-        pRetVal: *mut *mut _Type,
+    fn get_reflected_type(
+        p_ret_val: *mut *mut _Type,
     ) -> HRESULT,
-    fn GetCustomAttributes(
-        attributeType: *mut _Type,
+    fn get_custom_attributes(
+        attribute_type: *mut _Type,
         inherit: VARIANT_BOOL,
-        pRetVal: *mut *mut SAFEARRAY,
+        p_ret_val: *mut *mut SAFEARRAY,
     ) -> HRESULT,
-    fn GetCustomAttributes_2(
+    fn get_custom_attributes_2(
         inherit: VARIANT_BOOL, 
-        pRetVal: *mut *mut SAFEARRAY, 
+        p_ret_val: *mut *mut SAFEARRAY, 
     ) -> HRESULT,
-    fn IsDefined(
-        attributeType: *mut _Type,
+    fn is_defined(
+        attribute_type: *mut _Type,
         inherit: VARIANT_BOOL, 
-        pRetVal: *mut VARIANT_BOOL,
+        p_ret_val: *mut VARIANT_BOOL,
     ) -> HRESULT,
-    fn GetParameters(
-        pRetVal: *mut *mut SAFEARRAY,
+    fn get_parameters(
+        p_ret_val: *mut *mut SAFEARRAY,
     ) -> HRESULT,
-    fn GetMethodImplementationFlags(
-        pRetVal: *mut *mut MethodImplAttributes, 
+    fn get_method_implementation_flags(
+        p_ret_val: *mut *mut MethodImplAttributes, 
     ) -> HRESULT,
-    fn get_MethodHandle(
-        pRetVal: *mut RuntimeMethodHandle,
+    fn get_method_handle(
+        p_ret_val: *mut RuntimeMethodHandle,
     ) -> HRESULT,
     /*virtual HRESULT __stdcall get_Attributes (
         /*[out,retval]*/ enum MethodAttributes * pRetVal ) = 0;
@@ -194,8 +172,8 @@ interface _MethodInfo(_MethodInfoVtbl): IUnknown(IUnknownVtbl){
 RIDL!{#[uuid(0x6240837a, 0x707f, 0x3181, 0x8e, 0x98, 0xa3, 0x6a, 0xe0, 0x86, 0x76, 0x6b)]
 interface _MethodBase(_MethodBaseVtbl): IUnknown(IUnknownVtbl)
 {
-    fn GetTypeInfoCount(
-        pcTInfo: *mut ULONG,
+    fn get_type_info_count(
+        pc_t_info: *mut ULONG,
     ) -> HRESULT,
 /*virtual HRESULT __stdcall GetTypeInfoCount (
         /*[out]*/ unsigned long * pcTInfo ) = 0;

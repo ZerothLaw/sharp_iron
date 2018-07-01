@@ -10,13 +10,13 @@ use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 //self
 RIDL!{#[uuid(0xbca8b44d, 0xaad6, 0x3a86, 0x8a, 0xb7, 0x03, 0x34, 0x9f, 0x4f, 0x2d, 0xa2)]
 interface _Type(_TypeVtbl): IUnknown(IUnknownVtbl){
-	fn GetTypeInfoCount(
-		pcTInfo: *mut ULONG,
+	fn get_type_info_count(
+		pc_t_info: *mut ULONG,
 	) -> HRESULT,
-	fn GetTypeInfo(
-		iTInfo: ULONG,
+	fn get_type_info(
+		i_t_info: ULONG,
 		lcid: ULONG,
-		ppTInfo: c_long,
+		pp_t_info: c_long,
 	) -> HRESULT,
 }}
 

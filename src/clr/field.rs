@@ -11,42 +11,27 @@ use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 //self
 
 //body
-
+#[repr(C)]
 pub enum MemberTypes {
-    MemberTypes_Constructor = 1,
-    MemberTypes_Event = 2,
-    MemberTypes_Field = 4,
-    MemberTypes_Method = 8,
-    MemberTypes_Property = 16,
-    MemberTypes_TypeInfo = 32,
-    MemberTypes_Custom = 64,
-    MemberTypes_NestedType = 128,
-    MemberTypes_All = 191
+    Constructor = 1,
+    Event = 2,
+    Field = 4,
+    Method = 8,
+    Property = 16,
+    TypeInfo = 32,
+    Custom = 64,
+    NestedType = 128,
+    All = 191
 }
-
-
-impl Interface for MemberTypes {
-    #[inline]
-    fn uuidof() -> GUID {
-        GUID{
-            Data1: 0x513b8b77,
-            Data2: 0x4930,
-            Data3: 0x36ba,
-            Data4: [0x9a, 0x22, 0x0d, 0xae, 0xb2, 0x93, 0xe1, 0x09],
-        }
-    }
-}
+add_uuid!(MemberTypes, 0x513b8b77, 0x4930, 0x36ba, 0x9a, 0x22, 0x0d, 0xae, 0xb2, 0x93, 0xe1, 0x09);
 
 RIDL!{#[uuid(0x8a7c1442, 0xa9fb, 0x366b, 0x80, 0xd8, 0x49, 0x39, 0xff, 0xa6, 0xdb, 0xe0)]
 interface _FieldInfo(FieldInfoVtbl): IUnknown(IUnknownVtbl){
-    fn GetTypeInfoCount(
-        pcTInfo: *mut ULONG,
+    fn get_type_info_count(
+      pc_t_info: *mut ULONG,
     ) -> HRESULT,
 }}
-/*
-virtual HRESULT __stdcall GetTypeInfoCount (
-        /*[out]*/ unsigned long * pcTInfo ) = 0;
-      virtual HRESULT __stdcall GetTypeInfo (
+/*    virtual HRESULT __stdcall GetTypeInfo (
         /*[in]*/ unsigned long iTInfo,
         /*[in]*/ unsigned long lcid,
         /*[in]*/ long ppTInfo ) = 0;
@@ -145,8 +130,8 @@ virtual HRESULT __stdcall GetTypeInfoCount (
 
 RIDL!{#[uuid(0xf59ed4e4, 0xe68f, 0x3218, 0xbd, 0x77, 0x06, 0x1a, 0xa8, 0x28, 0x24, 0xbf)]
 interface _PropertyInfo(_PropertyInfoVtbl): IUnknown(IUnknownVtbl){
-    fn GetTypeInfoCount(
-        pcTInfo: *mut ULONG,
+    fn get_type_info_count(
+        pc_t_info: *mut ULONG,
     ) -> HRESULT,
 }}
 /*

@@ -9,7 +9,7 @@ extern crate libc;
 extern crate winapi;
 extern crate widestring;
 
-#[allow(non_snake_case, dead_code)]
+#[allow(dead_code)]//, dead_codenon_snake_case)]
 mod clr;
 pub use clr::MetaHost;
 pub use clr::RuntimeInfo;

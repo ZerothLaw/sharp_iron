@@ -9,8 +9,6 @@ use winapi::shared::ntdef::HANDLE;
 
 //self
 use clr::host_control::IRustHostControl;
-use clr::host_control::ICustomAppDomainManager;
-use clr::misc::_AppDomain;
 
 extern "C" {
 	pub fn CLRCreateInstance(
@@ -32,5 +30,21 @@ macro_rules! coerce_pointer {
 	};
 	( $pointer:ident, *const $ct:ty, $pt2:ident) => {
 		let $ptr2: *const $ct = &$pointer as *const _ as *const $ct;
+	};
+}
+#[macro_export]
+macro_rules! add_uuid {
+	($interface:ident, $lng:expr, $w1:expr, $w2:expr, $b1:expr, $b2:expr, $b3:expr, $b4:expr, $b5:expr, $b6:expr, $b7:expr, $b8:expr ) => {
+		impl Interface for $interface {
+			#[inline]
+			fn uuidof() -> GUID {
+				GUID {
+					Data1: $lng,
+					Data2: $w1, 
+					Data3: $w2, 
+					Data4: [$b1, $b2, $b3, $b4, $b5, $b6, $b7, $b8]
+				}
+			}
+		}
 	};
 }

@@ -15,36 +15,36 @@ use winapi::um::oaidl::{IDispatch, IDispatchVtbl};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
 //self
-use clr::misc::_AppDomain;
+use clr::app_domain::{_AppDomain, AppDomain};
 
 //body
 
 RIDL!{#[uuid(0xB47320A6, 0x6265, 0x4C34, 0x90, 0xAC, 0x3F, 0xF2, 0xA9, 0x09, 0x68, 0x6C)]
 interface ICustomAppDomainManager(ICustomAppDomainManagerVtbl): IDispatch(IDispatchVtbl){
-    fn GetAppDomain(
+    fn get_app_domain(
         friendly_name: BSTR,
         app_domain: *mut *mut _AppDomain,
     ) -> HRESULT,
-    fn CreateAppDomain(
+    fn create_app_domain(
         app_domain: *mut *mut _AppDomain,
     )-> HRESULT,
 }}
 
 RIDL!{#[uuid(0x02CA073C, 0x7079, 0x4860, 0x88, 0x0A, 0xC2, 0xF7, 0xA4, 0x49, 0xC9, 0x91)]
 interface IHostControl(IHostControlVtbl): IUnknown(IUnknownVtbl){
-	fn GetHostManager(
+	fn get_host_manager(
 		riid: REFIID, 
-		ppObject: *mut *mut c_void,
+		pp_object: *mut *mut c_void,
 	) -> HRESULT,
-	fn SetAppDomainManager(
-		dwAppDomainID: DWORD, 
-		pUnkAppDomainManager: *mut IUnknown, 
+	fn set_app_domain_manager(
+		dw_app_domain_id: DWORD, 
+		p_unk_app_domain_manager: *mut IUnknown, 
 	) -> HRESULT,
 }}
 
 RIDL!{#[uuid(0x1e20d486, 0x67c7, 0x4cd6, 0xb5, 0x6b, 0x41, 0xd2, 0x29, 0x7d, 0x5b, 0x2f)]
 interface IRustHostControl(IRustHostControlVtbl) : IHostControl(IHostControlVtbl){
-    fn  GetDomainManager() -> *mut ICustomAppDomainManager,
+    fn  domain_manager() -> *mut ICustomAppDomainManager,
 }}
 
 pub struct RustHostControl{
@@ -60,7 +60,7 @@ impl RustHostControl {
 
     pub fn get_domain_manager(&self) -> RustDomainManager{
         let ptr = unsafe {
-            (*self.ptr).GetDomainManager()
+            (*self.ptr).domain_manager()
         };
         RustDomainManager::new(ptr)
     }
@@ -76,12 +76,13 @@ impl RustDomainManager {
         RustDomainManager { ptr: in_ptr }
     }
 
-    pub fn app_domain(&self) -> *mut _AppDomain{
-        unsafe {
+    pub fn app_domain(&self) -> AppDomain{
+        let in_ptr = unsafe {
             let mut app_domain: *mut _AppDomain = ptr::null_mut();
-            let mut app_domain: *mut *mut _AppDomain = &mut app_domain;
-            let hr = (*self.ptr).CreateAppDomain(app_domain);
+            let app_domain: *mut *mut _AppDomain = &mut app_domain;
+            let _hr = (*self.ptr).create_app_domain(app_domain);
             *app_domain
-        }
+        };
+        AppDomain::new(in_ptr)
     }
 }

@@ -20,68 +20,68 @@ use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
 //self.structs
 use clr::c_api::GetCurrentProcess;
-use clr::runtime_host::{CLSID_CLRRuntimeHost, IID_ICLRRuntimeHost, ICLRRuntimeHost, RuntimeHost};
+use clr::runtime_host::{CLSID_CLRRUNTIME_HOST, IID_ICLRRUNTIME_HOST, ICLRRuntimeHost, RuntimeHost};
 
 RIDL!{#[uuid(0xBD39D1D2, 0xBA2F, 0x486a, 0x89, 0xB0, 0xB4, 0xB0, 0xCB, 0x46, 0x68, 0x91)]
 interface ICLRRuntimeInfo(ICLRRuntimeInfoVtbl): IUnknown(IUnknownVtbl) {
-	fn GetVersionString(
-		pwzBuffer: LPWSTR, 
-		pcchBuffer: *mut DWORD,
+	fn get_version_string(
+		pwz_buffer: LPWSTR, 
+		pcch_buffer: *mut DWORD,
 	) -> HRESULT,
 	
-	fn GetRuntimeDirectory(
-		pwzBuffer: LPWSTR, 
-		pcchBuffer: *mut DWORD,
+	fn get_runtime_directory(
+		pwz_buffer: LPWSTR, 
+		pcch_buffer: *mut DWORD,
 	) -> HRESULT,
 	
-	fn IsLoaded(
-		hndProcess: HANDLE, 
-		pbLoaded: *mut bool,
+	fn is_loaded(
+		hnd_process: HANDLE, 
+		pb_loaded: *mut bool,
 	) -> HRESULT,
 	
-	fn LoadErrorString(
-		iResourceID: UINT, 
-		pwzBuffer: LPWSTR, 
-		pcchBuffer: *mut DWORD,
-		iLocaleID: c_long,
+	fn load_error_string(
+		i_resource_id: UINT, 
+		pwz_buffer: LPWSTR, 
+		pcch_buffer: *mut DWORD,
+		i_locale_id: c_long,
 	) -> HRESULT,
 	
-	fn LoadLibrary(
-		pwzDllName: LPCWSTR, 
-		phndModule: *mut HMODULE,
+	fn load_library(
+		pwz_dll_name: LPCWSTR, 
+		phnd_module: *mut HMODULE,
 	) -> HRESULT,
 	
-	fn GetProcAddress(
-		pszProcName: LPCSTR, 
-		ppProc: *mut *mut LPVOID,
+	fn get_proc_address(
+		psz_proc_name: LPCSTR, 
+		pp_proc: *mut *mut LPVOID,
 	) -> HRESULT,
 	
-	fn GetInterface(
+	fn get_interface(
 		rclsid: REFCLSID, 
 		riid: REFIID, 
-		ppUnk: *mut LPVOID,
+		pp_unk: *mut LPVOID,
 	) -> HRESULT,
 	
-	fn IsLoadable(
-		pbLoadable: *mut bool,
+	fn is_loadable(
+		pb_loadable: *mut bool,
 	) -> HRESULT,
 	
-	fn SetDefaultStartupFlags(
-		dwStartupFlags: DWORD, 
-		pwzHostConfigFile: LPCWSTR,
+	fn set_default_startup_flags(
+		dw_startup_flags: DWORD, 
+		pwz_host_config_file: LPCWSTR,
 	) -> HRESULT,
 	
-	fn GetDefaultStartupFlags(
-		pdwStartupFlags: *mut DWORD, 
-		pwzHostConfigFile: LPWSTR, 
-		pcchHostConfigFile: *mut DWORD, 
+	fn get_default_startup_flags(
+		pdw_startup_flags: *mut DWORD, 
+		pwz_host_config_file: LPWSTR, 
+		pcch_host_config_file: *mut DWORD, 
 	) -> HRESULT,
 	
-	fn BindAsLegacyV2Runtime() -> HRESULT, 
+	fn bind_as_legacy_v2_runtime() -> HRESULT, 
 
-	fn IsStarted(
-		pbStarted: *mut bool, 
-		pdwStartupFlags: *mut DWORD,
+	fn is_started(
+		pb_started: *mut bool, 
+		pdw_startup_flags: *mut DWORD,
 	) -> HRESULT,
 }}
 
@@ -108,7 +108,7 @@ impl RuntimeInfo {
 		if !self.loadable {
 			self.loadable = unsafe {
 				let mut res = false;
-				let _hr = (*self.ptr).IsLoadable(&mut res);
+				let _hr = (*self.ptr).is_loadable(&mut res);
 				res
 			};
 		}
@@ -120,7 +120,7 @@ impl RuntimeInfo {
 			let mut res = false;
 			self.loaded = unsafe { 
 				let handle = GetCurrentProcess();
-				let _hr = (*self.ptr).IsLoaded(handle, &mut res);
+				let _hr = (*self.ptr).is_loaded(handle, &mut res);
 				res
 			 };
 		}
@@ -132,7 +132,7 @@ impl RuntimeInfo {
 			let mut res = false;
 			self.started = unsafe {
 				let flags: *mut DWORD = ptr::null_mut();
-				let _hr = (*self.ptr).IsStarted(&mut res, flags);
+				let _hr = (*self.ptr).is_started(&mut res, flags);
 				res 
 			};
 		}
@@ -143,7 +143,7 @@ impl RuntimeInfo {
 		let res = unsafe {
 			let mut out_ptr: *mut ICLRRuntimeHost = ptr::null_mut();
 			coerce_pointer!(out_ptr, *mut LPVOID, ptr2);
-			let _hr = (*self.ptr).GetInterface(&CLSID_CLRRuntimeHost, &IID_ICLRRuntimeHost, ptr2);
+			let _hr = (*self.ptr).get_interface(&CLSID_CLRRUNTIME_HOST, &IID_ICLRRUNTIME_HOST, ptr2);
 			out_ptr
 		};
 		Ok(RuntimeHost::new(res))

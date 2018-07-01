@@ -21,10 +21,10 @@ use clr::host_control::{IHostControl, IRustHostControl, RustHostControl};
 use clr::c_api::RustHostControl_new;
 
 
-DEFINE_GUID!{IID_ICLRRuntimeHost, 
+DEFINE_GUID!{IID_ICLRRUNTIME_HOST, 
 	0x90F1A06C, 0x7712, 0x4762, 0x86, 0xB5, 0x7A, 0x5E, 0xBA, 0x6B, 0xDB, 0x02}
 
-DEFINE_GUID!{CLSID_CLRRuntimeHost, 
+DEFINE_GUID!{CLSID_CLRRUNTIME_HOST, 
 	0x90F1A06E, 0x7712, 0x4762, 0x86, 0xB5, 0x7A, 0x5E, 0xBA, 0x6B, 0xDB, 0x02}
 
 /*
@@ -35,39 +35,39 @@ type FExecuteInAppDomainCallback = Fn(*mut c_void)->HRESULT;
 
 RIDL!{#[uuid(0x90F1A06C, 0x7712, 0x4762, 0x86, 0xB5, 0x7A, 0x5E, 0xBA, 0x6B, 0xDB, 0x02)]
 interface ICLRRuntimeHost(ICLRRuntimeHostVtbl): IUnknown(IUnknownVtbl) {
-	fn Start() -> HRESULT,
-	fn Stop() -> HRESULT,
-	fn SetHostControl(
-		pHostControl: *mut IHostControl,
+	fn start() -> HRESULT,
+	fn stop() -> HRESULT,
+	fn set_host_control(
+		host_control: *mut IHostControl,
 	) -> HRESULT, 
-	fn GetCLRControl(
-		pCLRControl: *mut *mut ICLRControl, 
+	fn get_clr_control(
+		clr_control: *mut *mut ICLRControl, 
 	) -> HRESULT,
-	fn UnloadAppDomain(
-		dwAppDomainId: DWORD, 
-		fWaitUntilDone: bool,
+	fn unload_app_domain(
+		app_domain_id: DWORD, 
+		wait_until_done: bool,
 	) -> HRESULT,
-	fn ExecuteInAppDomain(
-		dwAppDomainId: DWORD, 
-		pCallback: *mut FExecuteInAppDomainCallback, 
+	fn execute_in_app_domain(
+		app_domain_id: DWORD, 
+		callback: *mut FExecuteInAppDomainCallback, 
 		cookie: *mut c_void,
 	) -> HRESULT,
-	fn GetCurrentAppDomainId(
-		pdwAppDomainId: *mut DWORD,
+	fn get_current_app_domain_id(
+		app_domain_id: *mut DWORD,
 	) -> HRESULT,
-	fn ExecuteApplication(
-		pwzAppFullName: LPCWSTR, 
-		dwManifestPaths: DWORD, 
-		ppwzManifestPaths: *mut LPCWSTR, 
-		dwActivationData: DWORD, 
-		ppwzActivationData: *mut LPCWSTR, 
-		pReturnValue: *mut c_int, 
+	fn execute_application(
+		app_full_name: LPCWSTR, 
+		dw_manifest_paths: DWORD, 
+		manifest_paths: *mut LPCWSTR, 
+		dw_activation_data: DWORD, 
+		activation_data: *mut LPCWSTR, 
+		return_value: *mut c_int, 
 	) -> HRESULT,
-	fn ExecuteInDefaultAppDomain(
-		pwzAssemblyPath: LPCWSTR, 
-		pwzTypeName: LPCWSTR, 
-		pwzArgument: LPCWSTR, 
-		pReturnValue: *mut DWORD,
+	fn execute_in_default_app_domain(
+		assembly_path: LPCWSTR, 
+		type_name: LPCWSTR, 
+		argument: LPCWSTR, 
+		return_value: *mut DWORD,
 	) -> HRESULT,
 }}
 
@@ -82,7 +82,7 @@ impl Drop for RuntimeHost {
 	fn drop(&mut self) {
 		if self.started {
 			unsafe {
-				(*self.ptr).Stop();
+				(*self.ptr).stop();
 			}
 		}
 	}
@@ -98,10 +98,10 @@ impl RuntimeHost {
 			self.started = unsafe {
 				//need to implement host control
 				let host_control: *mut IRustHostControl = RustHostControl_new() ;
-				let _hr = (*self.ptr).SetHostControl(host_control as *mut IHostControl);
+				let _hr = (*self.ptr).set_host_control(host_control as *mut IHostControl);
 				self.register_app_domain_manager_type();
 				self.host_control = Some(host_control);
-				let hr = (*self.ptr).Start();
+				let hr = (*self.ptr).start();
 				println!("HRESULT={:x}", hr);
 				hr == 0
 			};
@@ -112,11 +112,11 @@ impl RuntimeHost {
 	unsafe fn register_app_domain_manager_type(&mut self) {
 		let mut p_control: *mut ICLRControl = ptr::null_mut();
 		coerce_pointer!(p_control, *mut *mut ICLRControl, ptr2);
-		let hr = (*self.ptr).GetCLRControl(ptr2);
+		let hr = (*self.ptr).get_clr_control(ptr2);
 		println!("HRESULT={:x}", hr);
 		let assembly_name = WideCString::from_str("RustAppDomainManager, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a1db4d7bbefc8ca0, processorArchitecture=MSIL").unwrap();
 		let type_name = WideCString::from_str("RustAppDomainManager.RustAppDomainManager").unwrap();
-		let hr = (*p_control).SetAppDomainManagerType(assembly_name.as_ptr(), type_name.as_ptr());
+		let hr = (*p_control).set_app_domain_manager_type(assembly_name.as_ptr(), type_name.as_ptr());
 		println!("HRESULT={:x}", hr);
 	}
 
@@ -127,7 +127,7 @@ impl RuntimeHost {
 	pub fn get_current_app_domain_id(&self) -> u32 {
 		let mut id: DWORD = 0;
 		unsafe {
-			(*self.ptr).GetCurrentAppDomainId(&mut id);
+			(*self.ptr).get_current_app_domain_id(&mut id);
 			id
 		}
 	}

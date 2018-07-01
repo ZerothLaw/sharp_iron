@@ -14,6 +14,7 @@ mod method;
 mod misc;
 mod field;
 mod host_control;
+mod app_domain;
 
 //make types public
 //ordering is in layers of references.
