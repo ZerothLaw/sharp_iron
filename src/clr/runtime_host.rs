@@ -1,5 +1,6 @@
 //runtime_host.rs
-
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 //std
 //use std::ffi::CString;
 use std::ptr;
@@ -75,7 +76,7 @@ interface ICLRRuntimeHost(ICLRRuntimeHostVtbl): IUnknown(IUnknownVtbl) {
 pub struct RuntimeHost {
 	pub ptr: *mut ICLRRuntimeHost,
 	started: bool,
-	host_control: Option<*mut IRustHostControl>,
+	host_control: Option<RustHostControl>,
 }
 
 impl Drop for RuntimeHost {
@@ -100,9 +101,9 @@ impl RuntimeHost {
 				let host_control: *mut IRustHostControl = RustHostControl_new() ;
 				let _hr = (*self.ptr).set_host_control(host_control as *mut IHostControl);
 				self.register_app_domain_manager_type();
-				self.host_control = Some(host_control);
+				self.host_control = Some(RustHostControl::new(host_control));
 				let hr = (*self.ptr).start();
-				println!("HRESULT={:x}", hr);
+				println!("HRESULT={:x}a", hr);
 				hr == 0
 			};
 		}
@@ -113,11 +114,11 @@ impl RuntimeHost {
 		let mut p_control: *mut ICLRControl = ptr::null_mut();
 		coerce_pointer!(p_control, *mut *mut ICLRControl, ptr2);
 		let hr = (*self.ptr).get_clr_control(ptr2);
-		println!("HRESULT={:x}", hr);
-		let assembly_name = WideCString::from_str("RustAppDomainManager, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a1db4d7bbefc8ca0, processorArchitecture=MSIL").unwrap();
+		println!("HRESULT={:x}b", hr);
+		let assembly_name = WideCString::from_str("RustAppDomainManager, Version=1.0.1.11, Culture=neutral, PublicKeyToken=a1db4d7bbefc8ca0, processorArchitecture=MSIL").unwrap();
 		let type_name = WideCString::from_str("RustAppDomainManager.RustAppDomainManager").unwrap();
 		let hr = (*p_control).set_app_domain_manager_type(assembly_name.as_ptr(), type_name.as_ptr());
-		println!("HRESULT={:x}", hr);
+		println!("HRESULT={:x}c", hr);
 	}
 
 	pub fn is_null(&self) -> bool {
@@ -132,19 +133,10 @@ impl RuntimeHost {
 		}
 	}
 
-	pub fn get_host_control(&self) -> RustHostControl {
-		RustHostControl::new(self.host_control.unwrap())
+	pub fn get_host_control(&self) -> Option<&RustHostControl> {
+		match &self.host_control {
+			Some(hc) => Some(&hc),
+			None => None
+		}
 	}
-	
-	// pub fn load_assembly(&mut self, runtime_info: RuntimeInfo, assembly_name: &str) -> bool {
-	// 	if !self.started {
-	// 		self.start();
-	// 	}
-	// 	let cs_assembly_name = CString::new(assembly_name).unwrap();
-	// 	let res = unsafe {
-	// 		CLRRuntimeHost_load_assembly(self.internal_ptr, runtime_info.internal_ptr, cs_assembly_name.as_ptr())
-	// 	};
-
-	// 	return res.ok;
-	// }
 }

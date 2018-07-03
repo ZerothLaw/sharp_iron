@@ -1,12 +1,19 @@
 #pragma once
 
 #ifdef __cplusplus
+
 #pragma comment(lib, "mscoree.lib")
-#import <mscorlib.tlb> high_property_prefixes("_get","_put","_putref") rename("value","val") rename("or", "ORR") rename("ReportEvent", "InteropServices_ReportEvent") raw_interfaces_only no_smart_pointers
+
+#import "mscorlib.tlb" raw_interfaces_only no_smart_pointers \
+    high_property_prefixes("_get","_put","_putref")		\
+    rename("ReportEvent", "InteropServices_ReportEvent") \
+	rename("or", "ORR")
+
 #include <comdef.h>
 
 using namespace mscorlib;
-#import "RustAppDomainManager.tlb" raw_interfaces_only
+
+#import "RustAppDomainManager.tlb" raw_interfaces_only no_smart_pointers
 using namespace RustAppDomainManager;
 #define RUST_APP_DOMAIN_MANAGER_GUID_STR "B47320A6-6265-4C34-90AC-3FF2A909686C"
 DEFINE_GUID(RUST_APP_DOMAIN_MANAGER_GUID,
@@ -19,12 +26,11 @@ DEFINE_GUID(RUST_HOST_CONTROL_GUID,
 	0x1e20d486, 0x67c7, 0x4cd6, 0xb5, 0x6b, 0x41, 0xd2, 0x29, 0x7d, 0x5b, 0x2f);
 
 
-
-
 extern "C" {
 #endif
 
 	class __declspec(uuid(RUST_HOST_CONTROL_GUID_STR)) IRustHostControl : public IHostControl {
+	public:
 		virtual ICustomAppDomainManager* GetDomainManager() = 0;
 	};
 
@@ -36,8 +42,6 @@ extern "C" {
 	}
 	
 	IRustHostControl* RustHostControl_new();
-
-	_AppDomain* AppDomainManager_get_app_domain(ICustomAppDomainManager* appManager);
 
 #ifdef __cplusplus
 }
@@ -52,7 +56,7 @@ public:
 	HRESULT __stdcall SetAppDomainManager(DWORD dwAppDomainID, IUnknown* pUnkAppDomainManager);
 	RustHostControl();
 	virtual ~RustHostControl();
-	ICustomAppDomainManager* GetDomainManager();
+	virtual ICustomAppDomainManager* GetDomainManager();
 private:
 	long refCount_m;
 	ICustomAppDomainManager* defaultDomainManager_m;

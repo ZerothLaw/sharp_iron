@@ -1,4 +1,6 @@
 //runtime_info.rs
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 //std
 use std::ptr;
 
@@ -19,7 +21,7 @@ use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 //self
 
 //self.structs
-use clr::c_api::GetCurrentProcess;
+use clr::c_api::{GetCurrentProcess};
 use clr::runtime_host::{CLSID_CLRRUNTIME_HOST, IID_ICLRRUNTIME_HOST, ICLRRuntimeHost, RuntimeHost};
 
 RIDL!{#[uuid(0xBD39D1D2, 0xBA2F, 0x486a, 0x89, 0xB0, 0xB4, 0xB0, 0xCB, 0x46, 0x68, 0x91)]
@@ -147,17 +149,7 @@ impl RuntimeInfo {
 			out_ptr
 		};
 		Ok(RuntimeHost::new(res))
-	}	
-	
-	// pub fn get_error_string(&self, hr: HRESULT) -> Result<WideString, String> {
-	// 	let result = unsafe {CLRRuntimeInfo_load_error_string(self.internal_ptr, hr) };
-	// 	match result.ok {
-	// 		true => {
-	// 			Ok( unsafe {WideString::from_ptr(result.c_ptr.bstr, result.hr as usize) })
-	// 		}, 
-	// 		false => Err("Couldn't load the resource string. Check that you have the correct library or DLL loaded into memory first.".to_string())
-	// 	}
-	// }
+	}
 	
 	pub fn is_null(&self) -> bool {
 		self.ptr.is_null()

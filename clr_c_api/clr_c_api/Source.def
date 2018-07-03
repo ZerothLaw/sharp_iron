@@ -2,4 +2,7 @@ LIBRARY clr_c_api
 EXPORTS
 	CLRCreateInstance @1
 	RustHostControl_new @2
-	AppDomainManager_get_app_domain @3
+	SafeArrayCreate @3
+	SafeArrayDestroy @4
+	SafeArrayLock @5
+	SafeArrayUnlock @6

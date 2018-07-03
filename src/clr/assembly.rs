@@ -1,4 +1,7 @@
 //assembly.rs
+
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 //std
 
 //3rd party
@@ -11,12 +14,26 @@ use winapi::shared::winerror::{HRESULT};
 use winapi::um::oaidl::{IDispatch, IDispatchVtbl, SAFEARRAY, VARIANT};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
-
 //self
 use clr::type_::_Type;
 use clr::method::_MethodInfo;
-use clr::misc::{_Binder, _CultureInfo, _Evidence, _FileStream, _ManifestResourceInfo, _ModuleResolveEventHandler, _Module, 
-_Stream, _SerializationInfo, _Version, BindingFlags, StreamingContext, };
+use clr::misc::{_Binder, _CultureInfo, _Evidence, _FileStream, 
+                _ManifestResourceInfo, _ModuleResolveEventHandler, _Module, 
+                _Stream, _SerializationInfo, _Version, BindingFlags,
+				StreamingContext,};
+
+#[derive(Debug)]
+pub struct Assembly {
+	ptr: *mut _Assembly
+}
+
+impl Assembly {
+	pub fn new(in_ptr: *mut _Assembly) -> Assembly{
+		Assembly {
+			ptr: in_ptr
+		}
+	}
+}
 
 //body
 #[repr(C)]

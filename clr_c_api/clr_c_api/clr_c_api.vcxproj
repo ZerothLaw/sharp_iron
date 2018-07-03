@@ -180,11 +180,6 @@
   <ItemGroup>
     <None Include="Source.def" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\RustAppDomainManager\RustAppDomainManager.csproj">
-      <Project>{d04e3373-17fe-4f68-9807-0ce4cf4c59b7}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

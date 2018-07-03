@@ -1,7 +1,10 @@
 //
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 //std
 
 //3rd party
+use widestring::{WideCStr, WideCString};
 use winapi::Interface;
 use winapi::ctypes::{c_long, c_short};
 
@@ -413,6 +416,25 @@ impl AppDomain {
     pub fn new(in_ptr: *mut _AppDomain) -> AppDomain {
         AppDomain {
             ptr: in_ptr
+        }
+    }
+
+    pub fn name(&self) -> String {
+        let ws_name = WideCString::default();
+        let mut raw = ws_name.into_raw();
+        let hr = unsafe {
+            (*self.ptr).get_friendly_name(&mut raw)
+        };
+        match hr {
+            0 => {
+                let new_ws = unsafe {WideCStr::from_ptr_str(raw)}; //borrow the string pointer, as string was allocated by the CLR/C++. 
+                let res = new_ws.to_string_lossy();
+
+                return res;
+            }, 
+            _ => {
+                panic!(format!("name() returned HR={:x}", hr));
+            }
         }
     }
 } 

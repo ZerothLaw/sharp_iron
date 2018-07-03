@@ -1,33 +1,51 @@
 //
-
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 //std
 use std::ptr;
 
 //3rd party
+
 use winapi::ctypes::{c_void};
 
 use winapi::shared::guiddef::{REFIID};
 use winapi::shared::minwindef::{DWORD};
 use winapi::shared::winerror::{HRESULT};
-use winapi::shared::wtypes::BSTR;
 
-use winapi::um::oaidl::{IDispatch, IDispatchVtbl};
+use winapi::um::oaidl::{IDispatch, IDispatchVtbl, SAFEARRAY};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
 //self
 use clr::app_domain::{_AppDomain, AppDomain};
+use clr::c_api::{ClrArray};
+use clr::assembly::{Assembly, _Assembly};
+
 
 //body
 
 RIDL!{#[uuid(0xB47320A6, 0x6265, 0x4C34, 0x90, 0xAC, 0x3F, 0xF2, 0xA9, 0x09, 0x68, 0x6C)]
 interface ICustomAppDomainManager(ICustomAppDomainManagerVtbl): IDispatch(IDispatchVtbl){
+    /*virtual HRESULT __stdcall GetAppDomain (
+        /*[in]*/ SAFEARRAY * friendlyName,
+        /*[out,retval]*/ struct mscorlib::_AppDomain * * pRetVal ) = 0;
+      virtual HRESULT __stdcall CreateAppDomain (
+        /*[in]*/ SAFEARRAY * name,
+        /*[out,retval]*/ struct mscorlib::_AppDomain * * pRetVal ) = 0;
+      virtual HRESULT __stdcall LoadAssembly (
+        /*[in]*/ SAFEARRAY * name,
+        /*[out,retval]*/ struct mscorlib::_Assembly * * pRetVal ) = 0;*/
     fn get_app_domain(
-        friendly_name: BSTR,
+        friendly_name: *mut SAFEARRAY,
         app_domain: *mut *mut _AppDomain,
     ) -> HRESULT,
     fn create_app_domain(
+        name: *mut SAFEARRAY,
         app_domain: *mut *mut _AppDomain,
     )-> HRESULT,
+    fn LoadAssembly(
+        name: *mut SAFEARRAY, //passing a safearray to byte[]
+        pRetVal: *mut *mut _Assembly,
+    ) -> HRESULT,
 }}
 
 RIDL!{#[uuid(0x02CA073C, 0x7079, 0x4860, 0x88, 0x0A, 0xC2, 0xF7, 0xA4, 0x49, 0xC9, 0x91)]
@@ -76,13 +94,38 @@ impl RustDomainManager {
         RustDomainManager { ptr: in_ptr }
     }
 
-    pub fn app_domain(&self) -> AppDomain{
-        let in_ptr = unsafe {
-            let mut app_domain: *mut _AppDomain = ptr::null_mut();
-            let app_domain: *mut *mut _AppDomain = &mut app_domain;
-            let _hr = (*self.ptr).create_app_domain(app_domain);
-            *app_domain
-        };
-        AppDomain::new(in_ptr)
+    pub fn app_domain(&self, name: &str) -> Result<AppDomain, HRESULT>{
+        let mut app_domain: *mut _AppDomain = ptr::null_mut();
+        let sa_name = ClrArray::new(name);
+        match sa_name.to_safearray() {
+            Ok(psa) => {
+                let _hr = unsafe {
+                    (*self.ptr).create_app_domain(psa, &mut app_domain)
+                };
+                Ok(AppDomain::new(app_domain))
+            }, 
+            Err(hr) => {
+                Err(hr)
+            }
+        }
+    }
+
+    pub fn load_assembly(&self, name: &str) -> Result<Assembly, HRESULT> {
+
+        let mut res: *mut _Assembly = ptr::null_mut();
+        let safe = ClrArray::new(name);
+        match safe.to_safearray() {
+            Ok(psa) => {
+                let hr = unsafe {
+                    (*self.ptr).LoadAssembly(psa, &mut res)
+                };
+
+                match hr {
+                    0 => Ok(Assembly::new(res)), 
+                    _ => Err(hr)
+                }
+            }, 
+            Err(hr) => Err(hr)
+        }
     }
 }

@@ -1,6 +1,7 @@
 //clr meta host
 //std
-//use std::ffi::CString;
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 use std::ptr;
 
 //3rd party

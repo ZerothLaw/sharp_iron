@@ -1,6 +1,5 @@
 //mod.rs
 //core C ABI 
-#[allow(dead_code,non_snake_case)]
 #[macro_use]
 mod c_api;
 
