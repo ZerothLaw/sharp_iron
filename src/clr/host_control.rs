@@ -3,37 +3,31 @@
 #![allow(non_snake_case)]
 //std
 use std::ptr;
+use std::mem;
 
 //3rd party
+use widestring::WideCString;
 
 use winapi::ctypes::{c_void};
 
 use winapi::shared::guiddef::{REFIID};
 use winapi::shared::minwindef::{DWORD};
 use winapi::shared::winerror::{HRESULT};
+use winapi::shared::wtypes::{BSTR};
 
 use winapi::um::oaidl::{IDispatch, IDispatchVtbl, SAFEARRAY};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
+use winapi::um::combaseapi::{CoTaskMemAlloc, CoTaskMemFree};
 
 //self
 use clr::app_domain::{_AppDomain, AppDomain};
 use clr::c_api::{ClrArray};
 use clr::assembly::{Assembly, _Assembly};
 
-
 //body
 
 RIDL!{#[uuid(0xB47320A6, 0x6265, 0x4C34, 0x90, 0xAC, 0x3F, 0xF2, 0xA9, 0x09, 0x68, 0x6C)]
 interface ICustomAppDomainManager(ICustomAppDomainManagerVtbl): IDispatch(IDispatchVtbl){
-    /*virtual HRESULT __stdcall GetAppDomain (
-        /*[in]*/ SAFEARRAY * friendlyName,
-        /*[out,retval]*/ struct mscorlib::_AppDomain * * pRetVal ) = 0;
-      virtual HRESULT __stdcall CreateAppDomain (
-        /*[in]*/ SAFEARRAY * name,
-        /*[out,retval]*/ struct mscorlib::_AppDomain * * pRetVal ) = 0;
-      virtual HRESULT __stdcall LoadAssembly (
-        /*[in]*/ SAFEARRAY * name,
-        /*[out,retval]*/ struct mscorlib::_Assembly * * pRetVal ) = 0;*/
     fn get_app_domain(
         friendly_name: *mut SAFEARRAY,
         app_domain: *mut *mut _AppDomain,
@@ -45,6 +39,9 @@ interface ICustomAppDomainManager(ICustomAppDomainManagerVtbl): IDispatch(IDispa
     fn LoadAssembly(
         name: *mut SAFEARRAY, //passing a safearray to byte[]
         pRetVal: *mut *mut _Assembly,
+    ) -> HRESULT,
+    fn TestingCall(
+        sTest: *mut u16, 
     ) -> HRESULT,
 }}
 
@@ -127,5 +124,30 @@ impl RustDomainManager {
             }, 
             Err(hr) => Err(hr)
         }
+    }
+    pub fn test_call(&self, val: &str) {
+        let s_len = val.len();
+        println!("s_len = {}", s_len);
+        let ws = WideCString::from_str(val).unwrap();
+        unsafe {
+            let raw = ws.into_raw();
+            let mem_size = (mem::size_of::<u16>() * s_len) + 4 + 2; //also need length prefix + null terminator
+            let contents_size = mem_size - 4 - 2;
+            println!("contents_size: {}", contents_size);
+            println!("mem_size: {}", mem_size);
+            //BSTR is a length prefixed double-byte string
+            let clr_raw: *mut u16 = CoTaskMemAlloc(mem_size) as *mut u16; //SIZE_T => ULONG_PTR => usize
+            //copy bytes from raw to clr_raw
+            let n: *const u16 = &contents_size as *const usize as *const u64 as *const u32 as *const u16;
+            //println!("n = {}", *n);
+            n.copy_to(clr_raw, 2);
+            let clr_raw = clr_raw.add(2);
+            raw.copy_to(clr_raw, contents_size);
+            clr_raw.add(contents_size).write_bytes(0, 1);
+
+            let hr = (*self.ptr).TestingCall(clr_raw);
+            let _ws = WideCString::from_raw(raw); //retake raw pointer to prevent memory leaks
+            println!("HRESULT = {:x}", hr);
+        };
     }
 }

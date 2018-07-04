@@ -13,6 +13,8 @@ namespace RustAppDomainManager
         AppDomain CreateAppDomain([In]byte[] name);
 
         _Assembly LoadAssembly([In]byte[] name);
+
+        void TestingCall(string sTest);
     }
 
     [Guid("C1AF7E4A-D78A-47DD-A308-356608657037"), ClassInterface(ClassInterfaceType.None), ComVisible(true), ProgId("RustAppDomainManager.RustAppDomainMgr"),
@@ -62,6 +64,11 @@ namespace RustAppDomainManager
             Console.Out.WriteLine("loading name: " + sName);
             var assembly = AppDomain.CurrentDomain.Load(sName);
             return assembly;
+        }
+
+        public void TestingCall(string sTest)
+        {
+            Console.Out.WriteLine("Called with: " + sTest);
         }
     }
 }

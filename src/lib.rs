@@ -73,11 +73,19 @@ mod tests {
 			}
 		};
 		let domain_manager = host.get_domain_manager();
-		let val = domain_manager.load_assembly("System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL");
-		println!("load_assembly exit");
-		println!("{:?}", val);
-
-		let oval = domain_manager.load_assembly("TestAssembly, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c97610437c81cba6, processorArchitecture=MSIL");
-		println!("{:?}", oval);
+		let app_domain = domain_manager.app_domain("HappyFunTimes");
+		match app_domain {
+			Ok(apd) => {
+				let asm = apd.load_assembly("TestAssembly, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c97610437c81cba6, processorArchitecture=MSIL");
+				match asm {
+					Ok(_) => {println!("Loaded assembly!"); assert!(true);}, 
+					Err(hr) => {println!("Assembly not loaded with HRESULT = {:x}", hr); assert!(false);}
+				}
+			}, 
+			Err(hr) => {
+				println!("AppDomain not loaded with HRESULT = {:x}", hr); 
+				assert!(false);
+			}
+		}
 	}
 }

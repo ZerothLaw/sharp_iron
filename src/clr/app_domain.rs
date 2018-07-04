@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 #![allow(non_snake_case)]
 //std
+use std::ptr;
 
 //3rd party
 use widestring::{WideCStr, WideCString};
@@ -10,17 +11,19 @@ use winapi::ctypes::{c_long, c_short};
 
 use winapi::shared::guiddef::{GUID};
 use winapi::shared::minwindef::{ULONG};
-use winapi::shared::winerror::{HRESULT};
+use winapi::shared::winerror::{HRESULT, E_POINTER};
 use winapi::shared::wtypes::{BSTR, VARIANT_BOOL};
 
 use winapi::um::oaidl::{IDispatch, IDispatchVtbl, SAFEARRAY, VARIANT};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
 //self
-use clr::assembly::{_Assembly, _AssemblyName, AssemblyBuilderAccess};
+use clr::assembly::{Assembly, _Assembly, _AssemblyName, AssemblyBuilderAccess};
 use clr::type_::_Type;
 use clr::misc::{_AssemblyLoadEventHandler, _Binder, _CultureInfo, _EventHandler, _Evidence, _ObjRef, _PolicyLevel, _ResolveEventHandler, _UnhandledExceptionEventHandler, 
 BindingFlags, IPrincipal};
+use clr::c_api::BStr;
+
 
 //body
 RIDL!{#[uuid(0xaf93163f, 0xc2f4, 0x3fab, 0x9f, 0xf1, 0x72, 0x8a, 0x7a, 0xaa, 0xd1, 0xcb)]
@@ -437,4 +440,28 @@ impl AppDomain {
             }
         }
     }
+
+    pub fn load_assembly(&self, name: &str) -> Result<Assembly, HRESULT> {
+        let bs = BStr::from_str(name);
+        match bs {
+            Ok(ibs) => {
+                let mut asm_ptr: *mut _Assembly = ptr::null_mut();
+                let hr = unsafe {
+                    let raw = ibs.as_raw();
+                    (*self.ptr).load_2(raw, &mut asm_ptr)
+                };
+                match hr {
+                    0 => Ok(Assembly::new(asm_ptr)), 
+                    _ => Err(hr)
+                }
+            }, 
+            Err(et) => {
+                Err(E_POINTER)
+            }
+        }
+    }
+    /*fn load_2(
+        assembly_string: BSTR, 
+        p_ret: *mut *mut _Assembly, 
+    ) -> HRESULT,*/
 } 
