@@ -5,11 +5,11 @@ authors = ["tyler.laing"]
 
 [dependencies]
 libc = "*"
-winapi = { version = "0.3.5", features = ["combaseapi", "guiddef", "winerror", "oaidl", "objidlbase"]}
+winapi = { version = "0.3.5", features = ["combaseapi", "guiddef", "winerror", "oaidl", "objidlbase", "oleauto"]}
 widestring="0.3.0"
 
 [build-dependencies]
-serde_json = "1.0"
+cc = "1.0"
 
 [badges]
 appveyor = { repository = "ZerothLaw/sharp_iron", branch="master", service="github"}
