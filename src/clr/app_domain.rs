@@ -5,13 +5,13 @@
 use std::ptr;
 
 //3rd party
-use widestring::{WideCStr, WideCString};
+use widestring::{WideCStr};
 use winapi::Interface;
 use winapi::ctypes::{c_long, c_short};
 
 use winapi::shared::guiddef::{GUID};
 use winapi::shared::minwindef::{ULONG};
-use winapi::shared::winerror::{HRESULT, E_POINTER};
+use winapi::shared::winerror::{HRESULT};
 use winapi::shared::wtypes::{BSTR, VARIANT_BOOL};
 
 use winapi::um::oaidl::{IDispatch, IDispatchVtbl, SAFEARRAY, VARIANT};
@@ -20,9 +20,79 @@ use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 //self
 use clr::assembly::{Assembly, _Assembly, _AssemblyName, AssemblyBuilderAccess};
 use clr::type_::_Type;
-use clr::misc::{_AssemblyLoadEventHandler, _Binder, _CultureInfo, _EventHandler, _Evidence, _ObjRef, _PolicyLevel, _ResolveEventHandler, _UnhandledExceptionEventHandler, 
+use clr::misc::{_AssemblyLoadEventHandler, _Binder, _CultureInfo, _EventHandler, _Evidence, _PolicyLevel, _ResolveEventHandler, _UnhandledExceptionEventHandler, 
 BindingFlags, IPrincipal};
-use clr::c_api::BStr;
+use clr::c_api::{BString};
+use clr::object_handle::{_ObjectHandle};
+
+#[derive(Debug)]
+pub struct AppDomain<'a>{
+    ptr: *mut _AppDomain,
+    name: Option<String>,
+    assemblies: Vec<&'a Assembly>
+}
+
+impl<'a> AppDomain<'a> {
+    pub fn new(in_ptr: *mut _AppDomain) -> AppDomain<'a> {
+        AppDomain {
+            ptr: in_ptr, 
+            name: None, 
+            assemblies: Vec::new()
+        }
+    }
+
+    pub fn name(&mut self) -> &str {
+        if self.name.is_none() {
+            let mut raw: *mut u16 = ptr::null_mut();
+            let hr = unsafe {
+                (*self.ptr).get_friendly_name(&mut raw)
+            };
+            match hr {
+                0 => {
+                    let new_ws = unsafe {WideCStr::from_ptr_str(raw)}; //borrow the string pointer, as string was allocated by the CLR/C++. 
+                    let res = new_ws.to_string_lossy();
+                    self.name = Some(res);
+                }, 
+                _ => {
+                    panic!(format!("name() returned HR={:x}", hr));
+                }
+            }
+        }
+        match &self.name {
+            Some(nm) => nm, 
+            None => ""
+        }
+    }
+
+    pub fn load_assembly(&self, name: &str) -> Result<Assembly, HRESULT> {
+        let bs = BString::from_str(name);
+        let mut asm_ptr: *mut _Assembly = ptr::null_mut();
+        let hr = unsafe {
+            let raw = bs.as_sys();
+            (*self.ptr).load_2(raw, &mut asm_ptr)
+        };
+        match hr {
+            0 => Ok(Assembly::new(asm_ptr)), 
+            _ => Err(hr)
+        }     
+    }
+
+    pub fn create_instance(&self, assembly_name: &str, type_name: &str) -> Result<*mut _ObjectHandle, HRESULT> {
+        let bs_name = BString::from_str(assembly_name);
+        let bs_type = BString::from_str(type_name);
+
+        let mut obj_ptr: *mut _ObjectHandle = ptr::null_mut();
+        let hr = unsafe {
+            let raw_name = bs_name.as_sys();
+            let raw_type = bs_type.as_sys();
+            (*self.ptr).create_instance(raw_name, raw_type, &mut obj_ptr)
+        };
+        match hr {
+            0 => Ok(obj_ptr), 
+            _ => Err(hr)
+        }
+    }
+} 
 
 
 //body
@@ -41,37 +111,6 @@ add_uuid!(PrincipalPolicy, 0x7d29bc4b, 0x8fbc, 0x38aa, 0x8b, 0x35, 0xed, 0x45, 0
 
 RIDL!{#[uuid(0xc2af4970, 0x4fb6, 0x319c, 0xa8, 0xaa, 0x06, 0x14, 0xd2, 0x7f, 0x2b, 0x2c)]
 interface _PermissionSet(_PermissionSetVtbl) : IDispatch(IDispatchVtbl){
-}}
-
-RIDL!{#[uuid(0xea675b47, 0x64e0, 0x3b5f, 0x9b, 0xe7, 0xf7, 0xdc, 0x29, 0x90, 0x73, 0x0d)]
-interface _ObjectHandle(_ObjectHandleVtbl) : IDispatch(IDispatchVtbl)
-{
-    fn get_to_string (
-        p_ret: *mut BSTR, 
-    ) ->HRESULT,
-    fn equals(
-        obj: VARIANT, 
-        p_ret: *mut VARIANT_BOOL,
-    ) -> HRESULT,
-    fn get_hash_code(
-        p_ret: *mut c_long, 
-    ) -> HRESULT, 
-    fn get_type(
-        p_ret: *mut *mut _Type,
-    ) -> HRESULT, 
-    fn get_lifetime_service(
-        p_ret: *mut VARIANT, 
-    ) -> HRESULT, 
-    fn initialize_lifetime_service(
-        p_ret: *mut VARIANT, 
-    ) -> HRESULT, 
-    fn create_obj_ref(
-        requested_type: *const _Type, 
-        p_ret: *mut *mut _ObjRef,
-    ) -> HRESULT, 
-    fn unwrap(
-        p_ret: *mut VARIANT, 
-    ) -> HRESULT,
 }}
 
 RIDL!{#[uuid(0xbebb2505, 0x8b54, 0x3443, 0xae, 0xad, 0x14, 0x2a, 0x16, 0xdd, 0x9c, 0xc7)]
@@ -410,58 +449,3 @@ interface _AppDomain(_AppDomainVtbl): IUnknown(IUnknownVtbl){
     ) -> HRESULT, 
 }}
 
-#[derive(Debug)]
-pub struct AppDomain{
-    ptr: *mut _AppDomain,
-}
-
-impl AppDomain {
-    pub fn new(in_ptr: *mut _AppDomain) -> AppDomain {
-        AppDomain {
-            ptr: in_ptr
-        }
-    }
-
-    pub fn name(&self) -> String {
-        let ws_name = WideCString::default();
-        let mut raw = ws_name.into_raw();
-        let hr = unsafe {
-            (*self.ptr).get_friendly_name(&mut raw)
-        };
-        match hr {
-            0 => {
-                let new_ws = unsafe {WideCStr::from_ptr_str(raw)}; //borrow the string pointer, as string was allocated by the CLR/C++. 
-                let res = new_ws.to_string_lossy();
-
-                return res;
-            }, 
-            _ => {
-                panic!(format!("name() returned HR={:x}", hr));
-            }
-        }
-    }
-
-    pub fn load_assembly(&self, name: &str) -> Result<Assembly, HRESULT> {
-        let bs = BStr::from_str(name);
-        match bs {
-            Ok(ibs) => {
-                let mut asm_ptr: *mut _Assembly = ptr::null_mut();
-                let hr = unsafe {
-                    let raw = ibs.as_raw();
-                    (*self.ptr).load_2(raw, &mut asm_ptr)
-                };
-                match hr {
-                    0 => Ok(Assembly::new(asm_ptr)), 
-                    _ => Err(hr)
-                }
-            }, 
-            Err(et) => {
-                Err(E_POINTER)
-            }
-        }
-    }
-    /*fn load_2(
-        assembly_string: BSTR, 
-        p_ret: *mut *mut _Assembly, 
-    ) -> HRESULT,*/
-} 

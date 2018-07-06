@@ -4,12 +4,8 @@
 #![allow(non_snake_case)]
 //std
 use std::ffi::OsStr;
-use std::mem::size_of;
 
 //3rd party
-use widestring::{WideStr, WideCString, NulError, MissingNulError};
-
-use winapi::ctypes::{c_void, wchar_t};
 use winapi::um::oaidl::{SAFEARRAY, SAFEARRAYBOUND};
 use winapi::shared::guiddef::{REFIID, REFCLSID};
 use winapi::shared::minwindef::{LPVOID, BYTE};
@@ -19,7 +15,7 @@ use winapi::shared::ntdef::ULONG;
 use winapi::shared::ntdef::LONG;
 use winapi::shared::wtypes::{VT_UI1, VARTYPE};
 use winapi::shared::minwindef::UINT;
-use winapi::um::combaseapi::{CoTaskMemAlloc, CoTaskMemFree};
+use winapi::um::oleauto::{SysAllocStringLen};
 
 //self
 use clr::host_control::{IRustHostControl};
@@ -81,91 +77,71 @@ impl ClrArray {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct BString {
+	size: usize, 
+	inner: Vec<u16>
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BStr {
-	contents_size: usize, 
-	inner: WideCString
+	size: usize,
+	inner: [u16]
 }
 
-macro_rules! handle_iws {
-	( $ws:ident ) => {
-		match $ws {
-			Ok(iws) => {
-				let count = iws.len();
-				Ok(BStr{ contents_size: count, inner: iws})
-			}, 
-			Err(et) => Err(et)
+use std::ffi::{OsString};
+use std::os::windows::ffi::{OsStrExt, OsStringExt};
+
+pub fn os_to_wide(s: &OsStr) -> Vec<u16> {
+	s.encode_wide().collect()
+}
+
+pub fn os_from_wide(s: &[u16]) -> OsString {
+	OsString::from_wide(s)
+}
+
+impl BString {
+	pub fn new() -> BString {
+		BString {inner: vec![], size: 0}
+	}
+	pub fn from_vec<T>(raw: T) -> BString 
+		where T: Into<Vec<u16>>
+	{
+		let raw = raw.into();
+		let l = raw.len();
+		BString { inner: raw, size: l }
+	}
+
+	pub fn from_str<S>(s: &S) -> BString 
+		where S: AsRef<OsStr> + ?Sized 
+	{
+		let s = os_to_wide(s.as_ref());
+		let l = s.len();
+		BString {
+			inner: s, 
+			size: l
 		}
-	};
+	}
+
+	pub fn into_vec(self) -> Vec<u16> {
+		self.inner
+	}
+
+	pub unsafe fn as_sys(&self) -> *mut u16 {
+		let new_ws = self.inner.clone();
+		let ws_ptr = new_ws.as_ptr();
+		SysAllocStringLen(ws_ptr, self.size as UINT)
+	}
 }
 
-impl BStr {
-	pub fn new<T>(v: T) -> Result<BStr, NulError> 
-		where T: Into<Vec<u16>>
-	{
-		let ws = WideCString::new(v);
-		handle_iws!(ws)
+impl Into<Vec<u16>> for BString {
+	fn into(self) -> Vec<u16> {
+		self.into_vec()
 	}
+}
 
-	pub fn from_vec_with_nul<T>(v: T) -> Result<BStr, MissingNulError> 
-		where T: Into<Vec<u16>>
-	{
-		let ws = WideCString::from_vec_with_nul(v);
-		handle_iws!(ws)
-	}
-
-	pub fn from_str<T>(s: T) -> Result<BStr, NulError> 
-		where T: AsRef<OsStr>
-	{
-		let ws = WideCString::from_str(s);
-		handle_iws!(ws)
-	}
-
-	pub fn from_wide_str<T>(s: T) -> Result<BStr, NulError> 
-		where T: AsRef<WideStr>
-	{
-		let ws = WideCString::from_wide_str(s);
-		handle_iws!(ws)
-	}
-
-	pub fn from_wide_str_with_nul<T>(s: T) -> Result<BStr, NulError> 
-		where T: AsRef<WideStr>
-	{
-		let ws = WideCString::from_wide_str(s);
-		handle_iws!(ws)
-	}
-
-	//consumes self and the inner string
-	pub unsafe fn as_raw(self) -> *mut u16 {
-		let raw = self.inner.into_raw();
-		let u16_sz = size_of::<u16>();
-		let byte_step = 4 / u16_sz;
-		let byte_sz = u16_sz * self.contents_size;
-		
-		//total size = <length prefix> + contents + <null ending bytes>
-		let total_sz = 4 + byte_sz + size_of::<wchar_t>();
-		let com_alloc_raw: *mut u16 = CoTaskMemAlloc(total_sz) as *mut u16;
-
-		//write byte_sz to starting 4 bytes, but we need to lose upper half of usize (on 64 bit machines)
-		let byte_sz_ptr: *const u16 = &byte_sz as *const _ as *const u16;
-		//let byte_sz_ptr = byte_sz_ptr.add( byte_step);
-
-		byte_sz_ptr.copy_to(com_alloc_raw, byte_step);
-		let com_alloc_raw = com_alloc_raw.add(byte_step);
-		
-		raw.copy_to(com_alloc_raw, byte_sz);
-		com_alloc_raw.add(byte_sz).write_bytes(0, 2);
-		let _ws = WideCString::from_raw(raw); //grab string pointer up and ensure its cleared by Rust
-		com_alloc_raw
-	}
-
-	//ONLY USE THIS ON THE POINTER YOU GET FROM as_raw !!! BAD STUFF CAN HAPPEN OTHERWISE
-	pub unsafe fn free_raw(raw: *mut u16) {
-		//first need to move back a byte_step
-		let u16_sz = size_of::<u16>();
-		let byte_step = 4 / u16_sz;
-
-		let raw = raw.sub(byte_step);
-		CoTaskMemFree(raw as *mut c_void);
+impl From<String> for BString {
+	fn from(s: String) -> BString {
+		BString::from_str(&s)
 	}
 }
 

@@ -92,7 +92,7 @@ interface _Assembly(_AssemblyVtbl): IDispatch(IDispatchVtbl){
 	fn hash_code(
 		p_ret_val: *mut c_long,
 	) -> HRESULT,
-	fn type_(
+	fn get_type(
 		p_ret_val: *mut *mut _Type,
 	) -> HRESULT,
 	fn code_base(
