@@ -9,18 +9,20 @@ use winapi::Interface;
 use winapi::ctypes::{c_long, c_short};
 use winapi::shared::guiddef::{GUID};
 use winapi::shared::minwindef::{ULONG};
-use winapi::shared::wtypes::{BSTR, VARIANT_BOOL};
+use winapi::shared::wtypes::{BSTR, VARIANT_BOOL, VARTYPE, VT_UNKNOWN};
 use winapi::shared::winerror::{HRESULT};
 use winapi::um::oaidl::{IDispatch, IDispatchVtbl, SAFEARRAY, VARIANT};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
+
 //self
-use clr::type_::_Type;
+use clr::type_::{Type, _Type};
 use clr::method::_MethodInfo;
 use clr::misc::{_Binder, _CultureInfo, _Evidence, _FileStream, 
                 _ManifestResourceInfo, _ModuleResolveEventHandler, _Module, 
                 _Stream, _SerializationInfo, _Version, BindingFlags,
 				StreamingContext,};
+use clr::c_api::ClrWrapper;
 
 #[derive(Debug)]
 pub struct Assembly {
@@ -32,6 +34,25 @@ impl Assembly {
 		Assembly {
 			ptr: in_ptr
 		}
+	}
+
+	fn get_types(&mut self) -> Vec<Type> {
+		// let type_ptrs = unsafe {
+		// 	(*self.ptr).get_types()
+		// };
+		Vec::new()
+	}
+}
+
+impl ClrWrapper for Assembly {
+	type InnerPointer = _Assembly;
+
+	fn into_raw(&self) -> *mut Self::InnerPointer {
+		self.ptr
+	}
+
+	fn vartype() -> VARTYPE {
+		VT_UNKNOWN as u16
 	}
 }
 

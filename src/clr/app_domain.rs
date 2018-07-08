@@ -25,6 +25,8 @@ BindingFlags, IPrincipal};
 use clr::c_api::{BString};
 use clr::object_handle::{_ObjectHandle};
 
+use clr::bindings::{_CrossAppDomainDelegate};
+
 #[derive(Debug)]
 pub struct AppDomain<'a>{
     ptr: *mut _AppDomain,
@@ -96,10 +98,7 @@ impl<'a> AppDomain<'a> {
 
 
 //body
-RIDL!{#[uuid(0xaf93163f, 0xc2f4, 0x3fab, 0x9f, 0xf1, 0x72, 0x8a, 0x7a, 0xaa, 0xd1, 0xcb)]
-interface _CrossAppDomainDelegate(_CrossAppDomainDelegateVtbl) : IDispatch(IDispatchVtbl){
 
-}}
 #[repr(C)]
 pub enum PrincipalPolicy
 {

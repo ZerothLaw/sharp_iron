@@ -4,10 +4,44 @@
 //std
 
 //3rd party
-use winapi::ctypes::{c_long};
+use winapi::ctypes::{c_long, c_short};
+
+use winapi::shared::guiddef::{GUID};
 use winapi::shared::minwindef::{ULONG};
 use winapi::shared::winerror::{HRESULT};
+use winapi::shared::wtypes::{BSTR, VARIANT_BOOL, VARTYPE, VT_UNKNOWN};
+
+use winapi::um::oaidl::{VARIANT};
+
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
+
+use winapi::um::oaidl::{SAFEARRAY};
+
+//self
+use clr::c_api::{ClrWrapper};
+use clr::field::MemberTypes;
+use clr::misc::{TypeAttributes, _ConstructorInfo, CallingConventions, _CultureInfo, _Module, 
+RuntimeTypeHandle, BindingFlags, _TypeFilter, _EventInfo, 
+_MemberFilter, InterfaceMapping, _Binder};
+use clr::assembly::_Assembly;
+use clr::method::{_MethodInfo};
+use clr::field::{_FieldInfo, _PropertyInfo};
+
+pub struct Type {
+  ptr: *mut _Type
+}
+
+impl ClrWrapper for Type {
+  type InnerPointer = _Type;
+  
+  fn into_raw(&self) -> *mut Self::InnerPointer {
+    self.ptr
+  }
+	fn vartype() -> VARTYPE {
+    VT_UNKNOWN as u16
+  }
+
+}
 
 //self
 RIDL!{#[uuid(0xbca8b44d, 0xaad6, 0x3a86, 0x8a, 0xb7, 0x03, 0x34, 0x9f, 0x4f, 0x2d, 0xa2)]
@@ -15,358 +49,573 @@ interface _Type(_TypeVtbl): IUnknown(IUnknownVtbl){
 	fn get_type_info_count(
 		pc_t_info: *mut ULONG,
 	) -> HRESULT,
-	fn get_type_info(
+	
+  fn get_type_info(
 		i_t_info: ULONG,
 		lcid: ULONG,
 		pp_t_info: c_long,
 	) -> HRESULT,
-}}
+  
+  fn get_ids_of_names(
+    riid: *const GUID, 
+    rgsz_names: c_long, 
+    c_names: ULONG, 
+    lcid: ULONG, 
+    rg_disp_id: c_long,
+  ) -> HRESULT,
+  
+  fn invoke(
+    disp_id_member: ULONG, 
+    riid: *const GUID, 
+    lcid: ULONG, 
+    w_flags: c_short, 
+    p_disp_params: c_long, 
+    p_var_result: c_long, 
+    p_except_info: c_long, 
+    pu_arg_err: c_long,
+  ) -> HRESULT,
+  
+  fn to_string(
+    p_ret_val: *mut BSTR,
+  ) -> HRESULT,
+  
+  fn equals(
+    other: VARIANT, 
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+  
+  fn hash_code(
+    p_ret_val: *mut c_long,
+  ) -> HRESULT, 
+  
+  fn get_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT, 
 
-/*    virtual HRESULT __stdcall GetTypeInfoCount (
-        /*[out]*/ unsigned long * pcTInfo ) = 0;
-      virtual HRESULT __stdcall GetTypeInfo (
-        /*[in]*/ unsigned long iTInfo,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ long ppTInfo ) = 0;
-      virtual HRESULT __stdcall GetIDsOfNames (
-        /*[in]*/ GUID * riid,
-        /*[in]*/ long rgszNames,
-        /*[in]*/ unsigned long cNames,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ long rgDispId ) = 0;
-      virtual HRESULT __stdcall Invoke (
-        /*[in]*/ unsigned long dispIdMember,
-        /*[in]*/ GUID * riid,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ short wFlags,
-        /*[in]*/ long pDispParams,
-        /*[in]*/ long pVarResult,
-        /*[in]*/ long pExcepInfo,
-        /*[in]*/ long puArgErr ) = 0;
-      virtual HRESULT __stdcall get_ToString (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall Equals (
-        /*[in]*/ VARIANT other,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetHashCode (
-        /*[out,retval]*/ long * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_MemberType (
-        /*[out,retval]*/ enum MemberTypes * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_name (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_DeclaringType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_ReflectedType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetCustomAttributes (
-        /*[in]*/ struct _Type * attributeType,
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetCustomAttributes_2 (
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall IsDefined (
-        /*[in]*/ struct _Type * attributeType,
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_Guid (
-        /*[out,retval]*/ GUID * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_Module (
-        /*[out,retval]*/ struct _Module * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_Assembly (
-        /*[out,retval]*/ struct _Assembly * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_TypeHandle (
-        /*[out,retval]*/ struct RuntimeTypeHandle * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_FullName (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_Namespace (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_AssemblyQualifiedName (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetArrayRank (
-        /*[out,retval]*/ long * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_BaseType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetConstructors (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetInterface (
-        /*[in]*/ BSTR name,
-        /*[in]*/ VARIANT_BOOL ignoreCase,
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetInterfaces (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall FindInterfaces (
-        /*[in]*/ struct _TypeFilter * filter,
-        /*[in]*/ VARIANT filterCriteria,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetEvent (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ struct _EventInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetEvents (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetEvents_2 (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetNestedTypes (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetNestedType (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMember (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum MemberTypes Type,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetDefaultMembers (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall FindMembers (
-        /*[in]*/ enum MemberTypes MemberType,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[in]*/ struct _MemberFilter * filter,
-        /*[in]*/ VARIANT filterCriteria,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetElementType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall IsSubclassOf (
-        /*[in]*/ struct _Type * c,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall IsInstanceOfType (
-        /*[in]*/ VARIANT o,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall IsAssignableFrom (
-        /*[in]*/ struct _Type * c,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetInterfaceMap (
-        /*[in]*/ struct _Type * interfaceType,
-        /*[out,retval]*/ struct InterfaceMapping * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethod (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ SAFEARRAY * types,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethod_2 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethods (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetField (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ struct _FieldInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetFields (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperty (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ struct _PropertyInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperty_2 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ struct _Type * returnType,
-        /*[in]*/ SAFEARRAY * types,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[out,retval]*/ struct _PropertyInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperties (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMember_2 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMembers (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall InvokeMember (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags invokeAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ VARIANT Target,
-        /*[in]*/ SAFEARRAY * args,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[in]*/ struct _CultureInfo * culture,
-        /*[in]*/ SAFEARRAY * namedParameters,
-        /*[out,retval]*/ VARIANT * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_UnderlyingSystemType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall InvokeMember_2 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags invokeAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ VARIANT Target,
-        /*[in]*/ SAFEARRAY * args,
-        /*[in]*/ struct _CultureInfo * culture,
-        /*[out,retval]*/ VARIANT * pRetVal ) = 0;
-      virtual HRESULT __stdcall InvokeMember_3 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags invokeAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ VARIANT Target,
-        /*[in]*/ SAFEARRAY * args,
-        /*[out,retval]*/ VARIANT * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetConstructor (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ enum CallingConventions callConvention,
-        /*[in]*/ SAFEARRAY * types,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[out,retval]*/ struct _ConstructorInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetConstructor_2 (
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ SAFEARRAY * types,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[out,retval]*/ struct _ConstructorInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetConstructor_3 (
-        /*[in]*/ SAFEARRAY * types,
-        /*[out,retval]*/ struct _ConstructorInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetConstructors_2 (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_TypeInitializer (
-        /*[out,retval]*/ struct _ConstructorInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethod_3 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ enum BindingFlags bindingAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ enum CallingConventions callConvention,
-        /*[in]*/ SAFEARRAY * types,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethod_4 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ SAFEARRAY * types,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethod_5 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ SAFEARRAY * types,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethod_6 (
-        /*[in]*/ BSTR name,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMethods_2 (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetField_2 (
-        /*[in]*/ BSTR name,
-        /*[out,retval]*/ struct _FieldInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetFields_2 (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetInterface_2 (
-        /*[in]*/ BSTR name,
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetEvent_2 (
-        /*[in]*/ BSTR name,
-        /*[out,retval]*/ struct _EventInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperty_3 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ struct _Type * returnType,
-        /*[in]*/ SAFEARRAY * types,
-        /*[in]*/ SAFEARRAY * modifiers,
-        /*[out,retval]*/ struct _PropertyInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperty_4 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ struct _Type * returnType,
-        /*[in]*/ SAFEARRAY * types,
-        /*[out,retval]*/ struct _PropertyInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperty_5 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ SAFEARRAY * types,
-        /*[out,retval]*/ struct _PropertyInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperty_6 (
-        /*[in]*/ BSTR name,
-        /*[in]*/ struct _Type * returnType,
-        /*[out,retval]*/ struct _PropertyInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperty_7 (
-        /*[in]*/ BSTR name,
-        /*[out,retval]*/ struct _PropertyInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetProperties_2 (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetNestedTypes_2 (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetNestedType_2 (
-        /*[in]*/ BSTR name,
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMember_3 (
-        /*[in]*/ BSTR name,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetMembers_2 (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_Attributes (
-        /*[out,retval]*/ enum TypeAttributes * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNotPublic (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsPublic (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNestedPublic (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNestedPrivate (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNestedFamily (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNestedAssembly (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNestedFamANDAssem (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNestedFamORAssem (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsAutoLayout (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsLayoutSequential (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsExplicitLayout (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsClass (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsInterface (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsValueType (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsAbstract (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsSealed (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsEnum (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsSpecialName (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsImport (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsSerializable (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsAnsiClass (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsUnicodeClass (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsAutoClass (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsArray (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsByRef (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsPointer (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsPrimitive (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsCOMObject (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_HasElementType (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsContextful (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsMarshalByRef (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall Equals_2 (
-        /*[in]*/ struct _Type * o,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-*/
+  fn get_member_type(
+    p_ret_val: *mut MemberTypes,
+  ) -> HRESULT,
+
+  fn get_name(
+    p_ret_val: *const BSTR,
+  ) -> HRESULT,
+
+  fn get_declaring_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_reflected_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_custom_attributes(
+    attribute_type: *const _Type, 
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_custom_attributes_2(
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn is_defined(
+    attribute_type: *const _Type, 
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT,
+
+  fn get_guid(
+    p_ret_val: *mut GUID, 
+  ) -> HRESULT, 
+
+  fn get_module(
+    p_ret_val: *mut *mut _Module, 
+  ) -> HRESULT,
+
+  fn get_assembly(
+    p_ret_val: *mut *mut _Assembly,
+  ) -> HRESULT,
+
+  fn get_type_handle(
+    p_ret_val: *mut RuntimeTypeHandle, 
+  ) -> HRESULT,
+
+  fn get_full_name(
+    p_ret_val: *mut BSTR, 
+  ) -> HRESULT, 
+
+  fn get_namespace(
+    p_ret_val: *mut BSTR, 
+  ) -> HRESULT, 
+
+  fn get_assembly_qualified_name(
+    p_ret_val: *mut BSTR,
+  ) -> HRESULT,
+
+  fn get_array_rank(
+    p_ret_val: *mut c_long,
+  ) -> HRESULT,
+
+  fn get_base_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_constructors(
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_interface(
+    name: BSTR, 
+    ignore_case: VARIANT_BOOL, 
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT, 
+
+  fn get_interfaces(
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn find_interfaces(
+    filter: *const _TypeFilter, 
+    filter_criteria: VARIANT, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT, 
+
+  fn get_event(
+    name: BSTR, 
+    binding_attr: BindingFlags,
+    p_ret_val: *mut *mut _EventInfo, 
+  ) -> HRESULT, 
+
+  fn get_events(
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_events_2(
+    binding_attr: BindingFlags,
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_nested_types(
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT, 
+
+  fn get_nested_type(
+    name: BSTR, 
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT, 
+
+  fn get_member(
+    name: BSTR, 
+    member_type: MemberTypes, 
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_default_members(
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn find_members(
+    member_type: MemberTypes,
+    binding_attr: BindingFlags,
+    filter: *const _MemberFilter, 
+    filter_criteria: VARIANT, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_element_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn is_subclass_of(
+    c: *const _Type, 
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT,
+
+  fn is_instance_of_type(
+    o: VARIANT, 
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn is_assignable_from(
+    c: *const _Type, 
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_interface_map(
+    interface_type: *mut _Type,
+    p_ret_val: *mut InterfaceMapping,
+  ) -> HRESULT, 
+
+  fn get_method(
+    name: BSTR, 
+    binding_attr: BindingFlags, 
+    binder: *const _Binder, 
+    types: *const SAFEARRAY, 
+    modifiers: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _MethodInfo, 
+  ) -> HRESULT, 
+
+  fn get_method_2(
+    name: BSTR, 
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_methods(
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT, 
+
+  fn get_field(
+    name: BSTR, 
+    binding_attr: BindingFlags,
+    p_ret_val: *mut *mut _FieldInfo, 
+  ) -> HRESULT,
+
+  fn get_fields(
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_property(
+    name: BSTR, 
+    binding_attr: BindingFlags,
+    p_ret_val: *mut *mut _PropertyInfo,
+  ) -> HRESULT,
+
+  fn get_property_2(
+    name: BSTR, 
+    binding_attr: BindingFlags,
+    binder: *const _Binder,
+    return_type: *const _Type,
+    types: *const SAFEARRAY,
+    modifiers: *const SAFEARRAY,
+    p_ret_val: *mut *mut _PropertyInfo,
+  ) -> HRESULT,
+
+  fn get_properties(
+    binding_attr: BindingFlags,
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_member_2(
+    name: BSTR,
+    binding_attr: BindingFlags, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_members(
+    binding_attr: BindingFlags,
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn invoke_member(
+    name: BSTR, 
+    invoke_attr: BindingFlags, 
+    binder: *const _Binder, 
+    target: VARIANT, 
+    args: *const SAFEARRAY, 
+    modifiers: *const SAFEARRAY, 
+    culture: *const _CultureInfo,
+    named_parameters: *const SAFEARRAY, 
+    p_ret_val: *mut VARIANT,
+  ) -> HRESULT, 
+
+  fn get_underlying_system_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn invoke_member_2(
+    name: BSTR, 
+    invoke_attr: BindingFlags, 
+    binder: *const _Binder, 
+    target: VARIANT, 
+    args: *const SAFEARRAY, 
+    culture: *const _CultureInfo,
+    p_ret_val: *mut VARIANT, 
+  ) -> HRESULT,
+
+  fn invoke_member_3(
+    name: BSTR, 
+    invoke_attr: BindingFlags,
+    binder: *const _Binder, 
+    target: VARIANT, 
+    args: *const SAFEARRAY, 
+    p_ret_val: *mut VARIANT, 
+  ) -> HRESULT,
+
+  fn get_constructor(
+    binding_attr: BindingFlags, 
+    binder: *const _Binder, 
+    call_convention: CallingConventions, 
+    types: *const SAFEARRAY, 
+    modifiers: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _ConstructorInfo, 
+  ) -> HRESULT, 
+
+  fn get_constructor_2(
+    binding_attr: BindingFlags, 
+    binder: *const _Binder, 
+    types: *const SAFEARRAY, 
+    modifiers: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _ConstructorInfo, 
+  ) -> HRESULT, 
+
+  fn get_constructor_3(
+    types: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _ConstructorInfo, 
+  ) -> HRESULT, 
+
+  fn get_constructors_2(
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_type_initializer(
+    p_ret_val: *mut *mut _ConstructorInfo,
+  ) -> HRESULT,
+
+  fn get_method_3(
+    name: BSTR, 
+    binding_attr: BindingFlags, 
+    binder: *const _Binder, 
+    call_convention: CallingConventions, 
+    types: *const SAFEARRAY, 
+    modifiers: *const SAFEARRAY,
+    p_ret_val: *mut *mut _MethodInfo, 
+  ) -> HRESULT,
+
+  fn get_method_4(
+    name: BSTR, 
+    types: *const SAFEARRAY, 
+    modifiers: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_method_5(
+    name: BSTR, 
+    types: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_method_6(
+    name: BSTR, 
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_methods_2(
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_field_2(
+    name: BSTR, 
+    p_ret_val: *mut *mut _FieldInfo,
+  ) -> HRESULT,
+
+  fn get_fields_2(
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT, 
+
+  fn get_interface_2(
+    name: BSTR, 
+    p_ret_val: *mut *mut _Type, 
+  ) -> HRESULT,
+
+  fn get_event_2(
+    name: BSTR, 
+    p_ret_val: *mut *mut _EventInfo, 
+  ) -> HRESULT, 
+
+  fn get_property_3(
+    name: BSTR, 
+    return_type: *const _Type,
+    types: *const SAFEARRAY,
+    modifiers: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _PropertyInfo,  
+  ) -> HRESULT,
+
+  fn get_property_4(
+    name: BSTR, 
+    return_type: *const _Type,
+    types: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _PropertyInfo,
+  ) -> HRESULT,
+
+  fn get_property_5(
+    name: BSTR, 
+    types: *const SAFEARRAY, 
+    p_ret_val: *mut *mut _PropertyInfo,
+  ) -> HRESULT, 
+
+  fn get_property_6(
+    name: BSTR, 
+    return_type: *const _Type, 
+    p_ret_val: *mut *mut _PropertyInfo,
+  ) -> HRESULT, 
+
+  fn get_property_7(
+    name: BSTR, 
+    p_ret_val: *mut *mut _PropertyInfo,
+  ) -> HRESULT, 
+
+  fn get_properties_2(
+    binding_attr: BindingFlags,
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_nested_types_2(
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT, 
+
+  fn get_nested_type_2(
+    name: BSTR, 
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_member_3(
+    name: BSTR, 
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_members_2(
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_attributes(
+    p_ret_val: *mut TypeAttributes, 
+  ) -> HRESULT,
+
+  fn get_is_not_public(
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT,
+
+  fn get_is_public(
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT, 
+
+  fn get_is_nested_public(
+    p_ret_val: *mut VARIANT_BOOL,  
+  ) -> HRESULT,
+
+  fn get_is_nested_private(
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT,
+
+  fn get_is_nested_family(
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT,
+
+  fn get_is_nested_assembly(
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT,
+
+  fn get_is_nested_fam_and_assem(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_nested_fam_or_assem(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_auto_layout(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_layout_sequential(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_explicit_layout(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_class(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_interface(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_value_type(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_abstract(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_sealed(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_enum(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_special_name(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_import(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+  
+  fn get_is_serializeable(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_ansi_class(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_unicode_class(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+  
+  fn get_is_auto_class(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_array(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_by_ref(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_pointer(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_primitive(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_com_object(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_has_element_type(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_contextful(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+  
+  fn get_is_marshal_by_ref(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn equals_2(
+    o: *mut _Type,
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+  
+}}

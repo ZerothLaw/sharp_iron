@@ -15,6 +15,7 @@ mod field;
 mod host_control;
 mod app_domain;
 mod object_handle;
+mod bindings;
 
 //make types public
 //ordering is in layers of references.

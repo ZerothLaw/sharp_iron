@@ -7,10 +7,19 @@ use winapi::Interface;
 use winapi::shared::guiddef::{GUID};
 use winapi::shared::minwindef::{ULONG};
 use winapi::shared::winerror::{HRESULT};
+use winapi::ctypes::{c_short, c_long};
+use winapi::shared::wtypes::{BSTR, VARIANT_BOOL};
+use winapi::um::oaidl::{VARIANT};
 
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
+use winapi::um::oaidl::{SAFEARRAY};
+
 //self
+use clr::type_::_Type;
+use clr::misc::{_Binder, BindingFlags, _CultureInfo, RuntimeFieldHandle, FieldAttributes};
+use clr::method::{_MethodInfo};
+
 
 //body
 #[repr(C)]
@@ -32,207 +41,346 @@ interface _FieldInfo(FieldInfoVtbl): IUnknown(IUnknownVtbl){
     fn get_type_info_count(
       pc_t_info: *mut ULONG,
     ) -> HRESULT,
+
+    fn get_type_info(
+      i_t_info: ULONG, 
+      lcid: ULONG, 
+      pp_t_info: c_long,
+    ) -> HRESULT,
+
+  fn get_ids_of_names(
+    riid: *const GUID, 
+    rgsz_names: c_long,
+    c_names: ULONG,
+    lcid: ULONG,
+    rg_disp_id: c_long,
+  ) -> HRESULT,
+
+  fn invoke(
+    disp_id_member: ULONG, 
+    riid: *const GUID, 
+    lcid: ULONG, 
+    w_flags: c_short, 
+    p_disp_params: c_long, 
+    p_var_result: c_long, 
+    p_except_info: c_long, 
+    pu_arg_err: c_long,
+  ) -> HRESULT,
+
+  fn to_string(
+    p_ret_val: *mut BSTR,
+  ) -> HRESULT,
+
+  fn equals(
+    other: VARIANT, 
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT, 
+
+  fn hash_code(
+    p_ret_val: *mut c_long,
+  ) -> HRESULT,
+
+  fn get_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_member_type(
+    p_ret_val: *mut MemberTypes,
+  ) -> HRESULT,
+
+  fn get_name(
+    p_ret_val: *mut BSTR,
+  ) -> HRESULT,
+
+  fn get_declaring_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_reflected_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_custom_attributes(
+    attribute_type: *const _Type,
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_custom_attributes_2(
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn is_defined(
+    attribute_type: *const _Type, 
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_field_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_value(
+    obj: VARIANT, 
+    p_ret_val: *const VARIANT,
+  ) -> HRESULT,
+
+  fn get_value_direct(
+    obj: VARIANT, 
+    p_ret_val: *const VARIANT,
+  ) -> HRESULT,
+
+  fn set_value(
+    obj: VARIANT, 
+    val: VARIANT, 
+    invoke_attr: BindingFlags,
+    binder: *const _Binder, 
+    culture: *const _CultureInfo,
+  ) -> HRESULT,
+
+  fn set_value_direct(
+    obj: VARIANT, 
+    val: VARIANT,
+  ) -> HRESULT,
+
+  fn get_field_handle(
+    p_ret_val: *mut RuntimeFieldHandle,
+  ) -> HRESULT,
+
+  fn get_attributes(
+    p_ret_val: *mut FieldAttributes,
+  ) -> HRESULT,
+
+  fn set_value_2(
+    obj: VARIANT,
+    val: VARIANT,
+  ) -> HRESULT,
+
+  fn get_is_public(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_private(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_family(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_assembly(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_family_and_assembly(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_family_or_assembly(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_static(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_init_only(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_literal(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_serialized(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_special_name(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_is_p_invoke_impl(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
 }}
-/*    virtual HRESULT __stdcall GetTypeInfo (
-        /*[in]*/ unsigned long iTInfo,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ long ppTInfo ) = 0;
-      virtual HRESULT __stdcall GetIDsOfNames (
-        /*[in]*/ GUID * riid,
-        /*[in]*/ long rgszNames,
-        /*[in]*/ unsigned long cNames,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ long rgDispId ) = 0;
-      virtual HRESULT __stdcall Invoke (
-        /*[in]*/ unsigned long dispIdMember,
-        /*[in]*/ GUID * riid,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ short wFlags,
-        /*[in]*/ long pDispParams,
-        /*[in]*/ long pVarResult,
-        /*[in]*/ long pExcepInfo,
-        /*[in]*/ long puArgErr ) = 0;
-      virtual HRESULT __stdcall get_ToString (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall Equals (
-        /*[in]*/ VARIANT other,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetHashCode (
-        /*[out,retval]*/ long * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_MemberType (
-        /*[out,retval]*/ enum MemberTypes * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_name (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_DeclaringType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_ReflectedType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetCustomAttributes (
-        /*[in]*/ struct _Type * attributeType,
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetCustomAttributes_2 (
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall IsDefined (
-        /*[in]*/ struct _Type * attributeType,
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_FieldType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetValue (
-        /*[in]*/ VARIANT obj,
-        /*[out,retval]*/ VARIANT * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetValueDirect (
-        /*[in]*/ VARIANT obj,
-        /*[out,retval]*/ VARIANT * pRetVal ) = 0;
-      virtual HRESULT __stdcall SetValue (
-        /*[in]*/ VARIANT obj,
-        /*[in]*/ VARIANT val,
-        /*[in]*/ enum BindingFlags invokeAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ struct _CultureInfo * culture ) = 0;
-      virtual HRESULT __stdcall SetValueDirect (
-        /*[in]*/ VARIANT obj,
-        /*[in]*/ VARIANT val ) = 0;
-      virtual HRESULT __stdcall get_FieldHandle (
-        /*[out,retval]*/ struct RuntimeFieldHandle * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_Attributes (
-        /*[out,retval]*/ enum FieldAttributes * pRetVal ) = 0;
-      virtual HRESULT __stdcall SetValue_2 (
-        /*[in]*/ VARIANT obj,
-        /*[in]*/ VARIANT val ) = 0;
-      virtual HRESULT __stdcall get_IsPublic (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsPrivate (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsFamily (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsAssembly (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsFamilyAndAssembly (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsFamilyOrAssembly (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsStatic (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsInitOnly (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsLiteral (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsNotSerialized (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsSpecialName (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsPinvokeImpl (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-};*/
 
 RIDL!{#[uuid(0xf59ed4e4, 0xe68f, 0x3218, 0xbd, 0x77, 0x06, 0x1a, 0xa8, 0x28, 0x24, 0xbf)]
 interface _PropertyInfo(_PropertyInfoVtbl): IUnknown(IUnknownVtbl){
     fn get_type_info_count(
         pc_t_info: *mut ULONG,
     ) -> HRESULT,
+
+    fn get_type_info(
+      i_t_info: ULONG, 
+      lcid: ULONG, 
+      pp_t_info: c_long,
+    ) -> HRESULT, 
+
+  fn get_ids_of_names(
+    riid: *const GUID, 
+    rgsz_names: c_long, 
+    c_names: ULONG, 
+    lcid: ULONG, 
+    rg_disp_id: c_long,
+  ) -> HRESULT,
+
+  fn invoke(
+    disp_id_member: ULONG, 
+    riid: *const GUID, 
+    lcid: ULONG, 
+    w_flags: c_short, 
+    p_disp_params: c_long, 
+    p_var_result: c_long, 
+    p_except_info: c_long, 
+    pu_arg_err: c_long,
+  ) -> HRESULT,
+
+  fn to_string(
+    p_ret_val: *mut BSTR,
+  ) -> HRESULT,
+
+  fn equals(
+    other: VARIANT, 
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT, 
+
+   fn hash_code(
+    p_ret_val: *mut c_long,
+  ) -> HRESULT,
+
+  fn get_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_member_type(
+    p_ret_val: *mut MemberTypes,
+  ) -> HRESULT,
+
+  fn get_name(
+    p_ret_val: *mut BSTR,
+  ) -> HRESULT,
+
+  fn get_declaring_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_reflected_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_custom_attributes(
+    attribute_type: *const _Type,
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_custom_attributes_2(
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn is_defined(
+    attribute_type: *const _Type, 
+    inherit: VARIANT_BOOL, 
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_property_type(
+    p_ret_val: *mut *mut _Type,
+  ) -> HRESULT,
+
+  fn get_value(
+    obj: VARIANT, 
+    index: *const SAFEARRAY,
+    p_ret_val: *mut VARIANT,
+  ) -> HRESULT,
+
+  fn get_value_2(
+    obj: VARIANT, 
+    invoke_attr: BindingFlags,
+    binder: *const _Binder,
+    index: *const SAFEARRAY,
+    culture: *const _CultureInfo,
+    p_ret_val: *mut VARIANT,
+  ) -> HRESULT,
+
+  fn set_value(
+    obj: VARIANT, 
+    val: VARIANT, 
+    index: *const SAFEARRAY,
+  ) -> HRESULT,
+
+  fn set_value_2(
+    obj: VARIANT, 
+    val: VARIANT, 
+    invoke_attr: BindingFlags, 
+    binder: *const _Binder,
+    index: *const SAFEARRAY, 
+    culture: *const _CultureInfo,
+  ) -> HRESULT,
+
+  fn get_accessors(
+    non_public: VARIANT_BOOL, 
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_get_method(
+    non_public: VARIANT_BOOL, 
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_set_method(
+    non_public: VARIANT_BOOL, 
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_index_params(
+    p_ret_val: *mut *mut SAFEARRAY, 
+  ) -> HRESULT,
+
+  fn get_attributes(
+    p_ret_val: *mut PropertyAttributes,
+  ) -> HRESULT,
+
+  fn get_can_read(
+    p_ret_val: *mut VARIANT_BOOL, 
+  ) -> HRESULT,
+
+  fn get_can_write(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
+  fn get_accessors_2(
+    p_ret_val: *mut *mut SAFEARRAY,
+  ) -> HRESULT,
+
+  fn get_get_method_2(
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_set_method_2(
+    p_ret_val: *mut *mut _MethodInfo,
+  ) -> HRESULT,
+
+  fn get_is_special_name(
+    p_ret_val: *mut VARIANT_BOOL,
+  ) -> HRESULT,
+
 }}
-/*
-virtual HRESULT __stdcall GetTypeInfoCount (
-        /*[out]*/ unsigned long * pcTInfo ) = 0;
-      virtual HRESULT __stdcall GetTypeInfo (
-        /*[in]*/ unsigned long iTInfo,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ long ppTInfo ) = 0;
-      virtual HRESULT __stdcall GetIDsOfNames (
-        /*[in]*/ GUID * riid,
-        /*[in]*/ long rgszNames,
-        /*[in]*/ unsigned long cNames,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ long rgDispId ) = 0;
-      virtual HRESULT __stdcall Invoke (
-        /*[in]*/ unsigned long dispIdMember,
-        /*[in]*/ GUID * riid,
-        /*[in]*/ unsigned long lcid,
-        /*[in]*/ short wFlags,
-        /*[in]*/ long pDispParams,
-        /*[in]*/ long pVarResult,
-        /*[in]*/ long pExcepInfo,
-        /*[in]*/ long puArgErr ) = 0;
-      virtual HRESULT __stdcall get_ToString (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall Equals (
-        /*[in]*/ VARIANT other,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetHashCode (
-        /*[out,retval]*/ long * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_MemberType (
-        /*[out,retval]*/ enum MemberTypes * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_name (
-        /*[out,retval]*/ BSTR * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_DeclaringType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_ReflectedType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetCustomAttributes (
-        /*[in]*/ struct _Type * attributeType,
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetCustomAttributes_2 (
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall IsDefined (
-        /*[in]*/ struct _Type * attributeType,
-        /*[in]*/ VARIANT_BOOL inherit,
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_PropertyType (
-        /*[out,retval]*/ struct _Type * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetValue (
-        /*[in]*/ VARIANT obj,
-        /*[in]*/ SAFEARRAY * index,
-        /*[out,retval]*/ VARIANT * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetValue_2 (
-        /*[in]*/ VARIANT obj,
-        /*[in]*/ enum BindingFlags invokeAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ SAFEARRAY * index,
-        /*[in]*/ struct _CultureInfo * culture,
-        /*[out,retval]*/ VARIANT * pRetVal ) = 0;
-      virtual HRESULT __stdcall SetValue (
-        /*[in]*/ VARIANT obj,
-        /*[in]*/ VARIANT val,
-        /*[in]*/ SAFEARRAY * index ) = 0;
-      virtual HRESULT __stdcall SetValue_2 (
-        /*[in]*/ VARIANT obj,
-        /*[in]*/ VARIANT val,
-        /*[in]*/ enum BindingFlags invokeAttr,
-        /*[in]*/ struct _Binder * Binder,
-        /*[in]*/ SAFEARRAY * index,
-        /*[in]*/ struct _CultureInfo * culture ) = 0;
-      virtual HRESULT __stdcall GetAccessors (
-        /*[in]*/ VARIANT_BOOL nonPublic,
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetGetMethod (
-        /*[in]*/ VARIANT_BOOL nonPublic,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetSetMethod (
-        /*[in]*/ VARIANT_BOOL nonPublic,
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetIndexParameters (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_Attributes (
-        /*[out,retval]*/ enum PropertyAttributes * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_CanRead (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_CanWrite (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetAccessors_2 (
-        /*[out,retval]*/ SAFEARRAY * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetGetMethod_2 (
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall GetSetMethod_2 (
-        /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;
-      virtual HRESULT __stdcall get_IsSpecialName (
-        /*[out,retval]*/ VARIANT_BOOL * pRetVal ) = 0;
-};*/
+
+#[repr(C)]
+pub enum PropertyAttributes
+{
+    None = 0,
+    SpecialName = 512,
+    ReservedMask = 62464,
+    RTSpecialName = 1024,
+    HasDefault = 4096,
+    Reserved2 = 8192,
+    Reserved3 = 16384,
+    Reserved4 = 32768
+}
+add_uuid!(PropertyAttributes, 0x816c979c, 0xd3d2, 0x3101, 0xb5, 0xca, 0xe4, 0xa5, 0xc5, 0xe9, 0x66, 0xfa);

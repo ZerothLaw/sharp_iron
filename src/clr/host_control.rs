@@ -88,7 +88,7 @@ impl RustDomainManager {
 
     pub fn app_domain(&self, name: &str) -> Result<AppDomain, HRESULT>{
         let mut app_domain: *mut _AppDomain = ptr::null_mut();
-        let sa_name = ClrArray::new(name);
+        let sa_name = ClrArray::new(String::from(name));
         match sa_name.to_safearray() {
             Ok(psa) => {
                 let _hr = unsafe {

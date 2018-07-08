@@ -4,6 +4,7 @@
 #![allow(non_snake_case)]
 //std
 use std::ffi::OsStr;
+use std::ptr;
 
 //3rd party
 use winapi::um::oaidl::{SAFEARRAY, SAFEARRAYBOUND};
@@ -35,17 +36,26 @@ extern "C" {
 	pub fn SafeArrayUnlock(psa: *mut SAFEARRAY) -> HRESULT;
 }
 
-pub struct ClrArray {
-	inner: String
+
+
+pub struct ClrArray<T> {
+	inner: T, 
+	safe_array: Option<*mut SAFEARRAY>
 }
 
-impl ClrArray {
-	pub fn new(input: &str) -> ClrArray{
-		ClrArray{inner: String::from(input)}
+impl<T> ClrArray<T> {
+	pub fn new(input: T) -> ClrArray<T>{
+		ClrArray{inner: input, safe_array: None}
 	}
 
+}
+
+impl<T> ClrArray<T>
+	where T: ToString
+ {
 	pub fn to_safearray(&self) -> Result<*mut SAFEARRAY, HRESULT> {
-		let mut sab: SAFEARRAYBOUND = SAFEARRAYBOUND {cElements: self.inner.len() as ULONG, lLbound: 0 as LONG};
+		let inner = self.inner.to_string();
+		let mut sab: SAFEARRAYBOUND = SAFEARRAYBOUND {cElements: inner.len() as ULONG, lLbound: 0 as LONG};
 		let psa = unsafe {SafeArrayCreate(VT_UI1 as u16, 1, &mut sab)};
 		let hr = unsafe {
 			SafeArrayLock(psa)
@@ -55,12 +65,119 @@ impl ClrArray {
 				let data = unsafe {
 					(*psa).pvData as *mut BYTE
 				};
-				let cin_str = self.inner.clone();
+				let cin_str = inner.clone();
 				let tdata: &[u8] = cin_str.as_bytes();
 				let pdata: *const u8 = tdata.as_ptr();
 				unsafe {
-					pdata.copy_to(data, self.inner.len())
+					pdata.copy_to(data, inner.len())
 				};
+				unsafe {
+					SafeArrayUnlock(psa)
+				};
+				Ok(psa)
+			}, 
+			_ => {
+				unsafe {
+					SafeArrayDestroy(psa)
+				};
+				Err(hr)
+			}
+		}
+	}
+}
+
+impl<T> ClrArray<T>
+	where T:ClrWrapper 
+{
+	pub fn into_safearray(sz: usize) -> Result<*mut SAFEARRAY, HRESULT> {
+		let mut sab: SAFEARRAYBOUND = SAFEARRAYBOUND{ cElements: sz as ULONG, lLbound: 0 as LONG};
+		let psa = unsafe {
+			SafeArrayCreate(T::vartype() as u16, 1, &mut sab)
+		};
+		if psa.is_null(){
+			return Err(0);
+		}
+		Ok(psa)
+	}
+
+	// pub fn from_vec(sz: usize, arr: &[T]) ->Result<ClrArray<T>, HRESULT> {
+	// 	let psa = match ClrArray::into_safearray(sz) {
+	// 		Ok(psa) => psa, 
+	// 		Err(hr) => return Err(hr)
+	// 	};
+	// 	let mut wrapper = ClrArray::new();
+	// 	Ok(psa
+	// }
+}
+
+pub trait ClrWrapper{
+	type InnerPointer;
+
+	fn into_raw(&self) -> *mut Self::InnerPointer;
+	fn vartype() -> VARTYPE;
+}
+
+pub struct NetArray<W> 
+	where W: ClrWrapper
+{
+	inner: Vec<W>, 
+	safe_array: Option<*mut SAFEARRAY>,
+	dirty: bool
+} 
+
+impl<W> NetArray<W> 
+	where W: ClrWrapper
+{
+	pub fn from_vec<V: Into<Vec<W>>>(v: V) -> NetArray<W> {
+		let v = v.into();
+		NetArray {
+			inner: v, 
+			safe_array: None, 
+			dirty: false
+		}
+	}
+
+	pub fn into_safearray(&self, sz: usize) -> Result<*mut SAFEARRAY, HRESULT>{
+		let mut sab: SAFEARRAYBOUND = SAFEARRAYBOUND{ cElements: sz as ULONG, lLbound: 0 as LONG};
+		let psa = unsafe {
+			SafeArrayCreate(W::vartype() as u16, 1, &mut sab)
+		};
+		if psa.is_null(){
+			return Err(0);
+		}
+		Ok(psa)
+	}
+
+	pub fn to_safearray(&self) -> Result<*mut SAFEARRAY, HRESULT>
+	{
+		if !self.dirty && self.safe_array.is_some() {
+			return match self.safe_array {
+				Some(psa) => Ok(psa),
+				None => Err(-1)
+			};
+		}
+		let psa = match self.into_safearray(self.inner.len()) {
+			Ok(psa) => psa,
+			Err(hr) => return Err(hr)
+		};
+
+		let hr = unsafe {
+			SafeArrayLock(psa)
+		};
+		match hr {
+			0 => {
+				let mut data = unsafe {
+					(*psa).pvData as *mut *mut W::InnerPointer
+				};
+
+				for wrapper in &self.inner {
+					unsafe {
+						let raw = wrapper.into_raw();
+						*data = raw;
+						data = data.add(1);
+					}
+				}
+				
 				unsafe {
 					SafeArrayUnlock(psa)
 				};
