@@ -4,9 +4,10 @@
 #![allow(non_snake_case)]
 //std
 use std::ffi::OsStr;
-use std::ptr;
 
 //3rd party
+use winapi::Interface;
+use winapi::shared::guiddef::{GUID};
 use winapi::um::oaidl::{SAFEARRAY, SAFEARRAYBOUND};
 use winapi::shared::guiddef::{REFIID, REFCLSID};
 use winapi::shared::minwindef::{LPVOID, BYTE};

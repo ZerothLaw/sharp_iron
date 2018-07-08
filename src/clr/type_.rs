@@ -23,9 +23,11 @@ use clr::field::MemberTypes;
 use clr::misc::{TypeAttributes, _ConstructorInfo, CallingConventions, _CultureInfo, _Module, 
 RuntimeTypeHandle, BindingFlags, _TypeFilter, _EventInfo, 
 _MemberFilter, InterfaceMapping, _Binder};
-use clr::assembly::_Assembly;
+
 use clr::method::{_MethodInfo};
 use clr::field::{_FieldInfo, _PropertyInfo};
+
+use clr::bindings::_Assembly;
 
 pub struct Type {
   ptr: *mut _Type

@@ -15,9 +15,10 @@ use winapi::shared::winerror::{HRESULT};
 use winapi::um::oaidl::{IDispatch, IDispatchVtbl, SAFEARRAY};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 //self
-use clr::app_domain::{_AppDomain, AppDomain};
+use clr::app_domain::{AppDomain};
 use clr::c_api::{ClrArray};
-use clr::assembly::{_Assembly};
+
+use clr::bindings::{_AppDomain, _Assembly};
 
 //body
 
