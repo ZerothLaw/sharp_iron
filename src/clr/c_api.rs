@@ -20,7 +20,7 @@ use winapi::shared::minwindef::UINT;
 use winapi::um::oleauto::{SysAllocStringLen};
 
 //self
-use clr::host_control::{IRustHostControl};
+use clr::bindings::{IRustHostControl};
 
 extern "C" {
 	pub fn CLRCreateInstance(

@@ -13,9 +13,8 @@ use winapi::shared::winerror::{HRESULT};
 use clr::assembly::{Assembly};
 
 use clr::c_api::{BString};
-use clr::object_handle::{_ObjectHandle};
 
-use clr::bindings::{_AppDomain, _Assembly};
+use clr::bindings::{_AppDomain, _Assembly, _ObjectHandle};
 
 #[derive(Debug)]
 pub struct AppDomain<'a>{

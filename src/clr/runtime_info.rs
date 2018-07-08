@@ -17,12 +17,12 @@ use winapi::shared::winerror::HRESULT;
 use winapi::um::winnt::{LPCSTR, LPCWSTR, LPWSTR};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 
-
 //self
 
 //self.structs
 use clr::c_api::{GetCurrentProcess};
-use clr::runtime_host::{CLSID_CLRRUNTIME_HOST, IID_ICLRRUNTIME_HOST, ICLRRuntimeHost, RuntimeHost};
+use clr::runtime_host::{CLSID_CLRRUNTIME_HOST, IID_ICLRRUNTIME_HOST,  RuntimeHost};
+use clr::bindings::ICLRRuntimeHost;
 
 RIDL!{#[uuid(0xBD39D1D2, 0xBA2F, 0x486a, 0x89, 0xB0, 0xB4, 0xB0, 0xCB, 0x46, 0x68, 0x91)]
 interface ICLRRuntimeInfo(ICLRRuntimeInfoVtbl): IUnknown(IUnknownVtbl) {
