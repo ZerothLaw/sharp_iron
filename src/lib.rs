@@ -79,11 +79,11 @@ mod tests {
 				let asm = apd.load_assembly("TestAssembly, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c97610437c81cba6, processorArchitecture=MSIL");
 				match asm {
 					Ok(_) => {println!("Loaded assembly!"); assert!(true);}, 
-					Err(hr) => {println!("Assembly not loaded with HRESULT = {:x}", hr); assert!(false);}
+					Err(hr) => {println!("Assembly not loaded with HRESULT = {:?}", hr); assert!(false);}
 				}
 			}, 
 			Err(hr) => {
-				println!("AppDomain not loaded with HRESULT = {:x}", hr); 
+				println!("AppDomain not loaded with HRESULT = {:?}", hr); 
 				assert!(false);
 			}
 		}

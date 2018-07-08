@@ -1,3 +1,6 @@
+
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 //std
 
 //3rd party
@@ -364,7 +367,6 @@ interface _AppDomain(_AppDomainVtbl): IUnknown(IUnknownVtbl){
     ) -> HRESULT, 
 }}
 
-
 RIDL!{#[uuid(0xb42b6aac, 0x317e, 0x34d5, 0x9f, 0xa9, 0x09, 0x3b, 0xb4, 0x16, 0x0c, 0x50)]
 interface _AssemblyName(_AssemblyNameVtbl): IUnknown(IUnknownVtbl) {
 	fn get_type_info_count(
@@ -396,7 +398,6 @@ interface _AssemblyName(_AssemblyNameVtbl): IUnknown(IUnknownVtbl) {
 		pu_arg_err: c_long,
 	) -> HRESULT,
 }}
-
 
 RIDL!{#[uuid(0x17156360, 0x2f1a, 0x384a, 0xbc, 0x52, 0xfd, 0xe9, 0x3c, 0x21, 0x5c, 0x5b)]
 interface _Assembly(_AssemblyVtbl): IDispatch(IDispatchVtbl){
@@ -606,8 +607,6 @@ interface _Assembly(_AssemblyVtbl): IDispatch(IDispatchVtbl){
 		p_ret_val: *mut VARIANT_BOOL,
 	) -> HRESULT,
 }}
-
-
 
 RIDL!{#[uuid(0x8a7c1442, 0xa9fb, 0x366b, 0x80, 0xd8, 0x49, 0x39, 0xff, 0xa6, 0xdb, 0xe0)]
 interface _FieldInfo(FieldInfoVtbl): IUnknown(IUnknownVtbl){
@@ -944,7 +943,6 @@ interface _PropertyInfo(_PropertyInfoVtbl): IUnknown(IUnknownVtbl){
 
 }}
 
-
 RIDL!{#[uuid(0xffcc1b5d, 0xecb8, 0x38dd, 0x9b, 0x01, 0x3d, 0xc8, 0xab, 0xc2, 0xaa, 0x5f)]
 interface _MethodInfo(_MethodInfoVtbl): IUnknown(IUnknownVtbl){
     fn get_type_info_count(
@@ -1069,14 +1067,13 @@ interface _MethodInfo(_MethodInfoVtbl): IUnknown(IUnknownVtbl){
         /*[out,retval]*/ struct _MethodInfo * * pRetVal ) = 0;*/
 }}
 
-
 RIDL!{#[uuid(0x6240837a, 0x707f, 0x3181, 0x8e, 0x98, 0xa3, 0x6a, 0xe0, 0x86, 0x76, 0x6b)]
 interface _MethodBase(_MethodBaseVtbl): IUnknown(IUnknownVtbl)
 {
     fn get_type_info_count(
         pc_t_info: *mut ULONG,
     ) -> HRESULT,
-/*virtual HRESULT __stdcall GetTypeInfoCount (
+    /*virtual HRESULT __stdcall GetTypeInfoCount (
         /*[out]*/ unsigned long * pcTInfo ) = 0;
       virtual HRESULT __stdcall GetTypeInfo (
         /*[in]*/ unsigned long iTInfo,
@@ -1174,8 +1171,6 @@ interface _MethodBase(_MethodBaseVtbl): IUnknown(IUnknownVtbl)
         /*[out,retval]*/ VARIANT * pRetVal ) = 0;*/
 }}
 
-
-
 type FExecuteInAppDomainCallback = Fn(*mut c_void)->HRESULT;
 
 RIDL!{#[uuid(0x90F1A06C, 0x7712, 0x4762, 0x86, 0xB5, 0x7A, 0x5E, 0xBA, 0x6B, 0xDB, 0x02)]
@@ -1216,8 +1211,6 @@ interface ICLRRuntimeHost(ICLRRuntimeHostVtbl): IUnknown(IUnknownVtbl) {
 	) -> HRESULT,
 }}
 
-
-//self
 RIDL!{#[uuid(0xbca8b44d, 0xaad6, 0x3a86, 0x8a, 0xb7, 0x03, 0x34, 0x9f, 0x4f, 0x2d, 0xa2)]
 interface _Type(_TypeVtbl): IUnknown(IUnknownVtbl){
 	fn get_type_info_count(

@@ -7,14 +7,16 @@ use std::ptr;
 //3rd party
 use widestring::{WideCStr};
 
-use winapi::shared::winerror::{HRESULT};
-
 //self
 use clr::assembly::{Assembly};
 
 use clr::c_api::{BString};
 
 use clr::bindings::{_AppDomain, _Assembly, _ObjectHandle};
+
+use clr::object_handle::ObjectHandle;
+
+use clr::error::*;
 
 #[derive(Debug)]
 pub struct AppDomain<'a>{
@@ -24,15 +26,19 @@ pub struct AppDomain<'a>{
 }
 
 impl<'a> AppDomain<'a> {
-    pub fn new(in_ptr: *mut _AppDomain) -> AppDomain<'a> {
-        AppDomain {
+    pub fn new(in_ptr: *mut _AppDomain) -> Result<AppDomain<'a>, ClrError> {
+        if in_ptr.is_null() {
+            return Err(ClrError::nul(ErrorSource::RustAppDomain));
+        }
+
+        Ok(AppDomain {
             ptr: in_ptr, 
             name: None, 
             assemblies: Vec::new()
-        }
+        })
     }
 
-    pub fn name(&mut self) -> &str {
+    pub fn name(&mut self) -> Result<&str, ClrError> {
         if self.name.is_none() {
             let mut raw: *mut u16 = ptr::null_mut();
             let hr = unsafe {
@@ -45,17 +51,17 @@ impl<'a> AppDomain<'a> {
                     self.name = Some(res);
                 }, 
                 _ => {
-                    panic!(format!("name() returned HR={:x}", hr));
+                    return Err(ClrError::inner_call(ErrorSource::CallAppDomain(hr)));
                 }
             }
         }
         match &self.name {
-            Some(nm) => nm, 
-            None => ""
+            Some(nm) => Ok(nm), 
+            None => Ok("")
         }
     }
 
-    pub fn load_assembly(&self, name: &str) -> Result<Assembly, HRESULT> {
+    pub fn load_assembly(&self, name: &str) -> Result<Assembly, ClrError> {
         let bs = BString::from_str(name);
         let mut asm_ptr: *mut _Assembly = ptr::null_mut();
         let hr = unsafe {
@@ -64,11 +70,11 @@ impl<'a> AppDomain<'a> {
         };
         match hr {
             0 => Ok(Assembly::new(asm_ptr)), 
-            _ => Err(hr)
+            _ => Err(ClrError::inner_call(ErrorSource::CallAppDomain(hr)))
         }     
     }
 
-    pub fn create_instance(&self, assembly_name: &str, type_name: &str) -> Result<*mut _ObjectHandle, HRESULT> {
+    pub fn create_instance(&self, assembly_name: &str, type_name: &str) -> Result<ObjectHandle, ClrError> {
         let bs_name = BString::from_str(assembly_name);
         let bs_type = BString::from_str(type_name);
 
@@ -79,8 +85,8 @@ impl<'a> AppDomain<'a> {
             (*self.ptr).create_instance(raw_name, raw_type, &mut obj_ptr)
         };
         match hr {
-            0 => Ok(obj_ptr), 
-            _ => Err(hr)
+            0 => Ok(ObjectHandle::new(obj_ptr)), 
+            _ => Err(ClrError::inner_call(ErrorSource::CallAppDomain(hr)))
         }
     }
 } 

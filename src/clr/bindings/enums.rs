@@ -113,6 +113,7 @@ pub enum BindingFlags
 }
 add_uuid!(BindingFlags, 0x3223e024, 0x5d70, 0x3236, 0xa9, 0x2a, 0x6b, 0x41, 0x14, 0xb2, 0x63, 0x2f);
 
+#[repr(C)]
 pub enum FieldAttributes
 {
     FieldAccessMask = 7,
@@ -137,6 +138,7 @@ pub enum FieldAttributes
 }
 add_uuid!(FieldAttributes, 0xc8679e0a, 0x1c67, 0x3a20, 0x86, 0x45, 0x0d, 0x93, 0x0f, 0x52, 0x90, 0x31);
 
+#[repr(C)]
 pub enum CallingConventions
 {
     Standard = 1,
@@ -147,7 +149,7 @@ pub enum CallingConventions
 }
 add_uuid!(CallingConventions, 0xfd67ebe2, 0x30de, 0x3fbe, 0x89, 0x6b, 0x81, 0xda, 0x2e, 0x45, 0x51, 0x37);
 
-
+#[repr(C)]
 pub enum TypeAttributes
 {
     VisibilityMask = 7,

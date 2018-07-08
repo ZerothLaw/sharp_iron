@@ -11,3 +11,11 @@ use clr::bindings::_ObjectHandle;
 pub struct ObjectHandle {
     ptr: *mut _ObjectHandle,
 }
+
+impl ObjectHandle {
+    pub fn new(hndl: *mut _ObjectHandle) -> ObjectHandle {
+        ObjectHandle {
+            ptr: hndl
+        }
+    }
+}

@@ -8,13 +8,9 @@ namespace RustAppDomainManager
     [Guid("B47320A6-6265-4C34-90AC-3FF2A909686C"), ComVisible(true)]
     public interface ICustomAppDomainManager
     {
-        AppDomain GetAppDomain([In]byte[] friendlyName);
+        AppDomain GetAppDomain(string friendlyName);
 
-        AppDomain CreateAppDomain([In]byte[] name);
-
-        _Assembly LoadAssembly([In]byte[] name);
-
-        void TestingCall(string sTest);
+        AppDomain CreateAppDomain(string name);
     }
 
     [Guid("C1AF7E4A-D78A-47DD-A308-356608657037"), ClassInterface(ClassInterfaceType.None), ComVisible(true), ProgId("RustAppDomainManager.RustAppDomainMgr"),
@@ -41,34 +37,18 @@ namespace RustAppDomainManager
             return apd;
         }
 
-        public AppDomain GetAppDomain([In]byte[] friendlyName)
+        public AppDomain GetAppDomain(string friendlyName)
         {
-            string sfriendName = System.Text.Encoding.UTF8.GetString(friendlyName);
-            if (mpAppDomains_m.ContainsKey(sfriendName))
+            if (mpAppDomains_m.ContainsKey(friendlyName))
             {
-                return mpAppDomains_m[sfriendName];
+                return mpAppDomains_m[friendlyName];
             }
             return null;
         }
 
-        public AppDomain CreateAppDomain([In]byte[] name)
+        public AppDomain CreateAppDomain(string name)
         {
-            string sName = System.Text.Encoding.UTF8.GetString(name);
-            return CreateDomain(sName, null, null);
-        }
-
-        public _Assembly LoadAssembly([In] byte[] name)
-        {
-            string sName = System.Text.Encoding.UTF8.GetString(name);
-            //string name = "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL";
-            Console.Out.WriteLine("loading name: " + sName);
-            var assembly = AppDomain.CurrentDomain.Load(sName);
-            return assembly;
-        }
-
-        public void TestingCall(string sTest)
-        {
-            Console.Out.WriteLine("Called with: " + sTest);
+            return CreateDomain(name, null, null);
         }
     }
 }

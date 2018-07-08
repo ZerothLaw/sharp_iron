@@ -68,7 +68,7 @@ impl RuntimeHost {
 		coerce_pointer!(p_control, *mut *mut ICLRControl, ptr2);
 		let hr = (*self.ptr).get_clr_control(ptr2);
 		println!("HRESULT={:x}b", hr);
-		let assembly_name = WideCString::from_str("RustAppDomainManager, Version=1.0.1.11, Culture=neutral, PublicKeyToken=a1db4d7bbefc8ca0, processorArchitecture=MSIL").unwrap();
+		let assembly_name = WideCString::from_str("RustAppDomainManager, Version=1.0.1.12, Culture=neutral, PublicKeyToken=a1db4d7bbefc8ca0, processorArchitecture=MSIL").unwrap();
 		let type_name = WideCString::from_str("RustAppDomainManager.RustAppDomainManager").unwrap();
 		let hr = (*p_control).set_app_domain_manager_type(assembly_name.as_ptr(), type_name.as_ptr());
 		println!("HRESULT={:x}c", hr);

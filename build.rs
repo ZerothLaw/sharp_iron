@@ -11,6 +11,8 @@ fn set_vs_env<'a>(cmd: &'a mut Command, devenv_dir: &Path) -> &'a mut Command {
 		.env("FrameworkDir32", "C:\\Windows\\Microsoft.NET\\Framework\\")
 		.env("FrameworkVersion", "v4.0.30319")
 		.env("FrameworkVersion32", "v4.0.30319")
+		.env("INCLUDE", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Tools\\MSVC\\14.14.26428\\ATLMFC\\include;C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Tools\\MSVC\\14.14.26428\\include;C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.6.1\\include\\um;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.17134.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.17134.0\\shared;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.17134.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.17134.0\\winrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.17134.0\\cppwinrt
+")
 		.env("LIBPATH", "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319")
 		.env("Path", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\bin;C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319;C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\;C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\Tools\\;%PATH%")
 		.env("VisualStudioVersion", "15.0")
@@ -41,25 +43,57 @@ fn build_and_move_csharp_lib() {
 					.output();
 				match msbuild_cmd {
 					Ok(msbuild_out) => {
-						println!("{:?}", String::from_utf8_lossy(&msbuild_out.stdout));
+						//println!("{:?}", String::from_utf8_lossy(&msbuild_out.stdout));
+						let gacutil_path = String::from("C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v10.0A\\bin\\NETFX 4.6.1 Tools\\x64\\gacutil.exe");
+						let gacutil_un = set_vs_env(&mut Command::new(&gacutil_path), devenv_dir)
+							.args(&["/u", "RustAppDomainManager"])
+							.output();
+
+						// if gacutil_un.is_ok() {
+						// 	let gacutil_un = gacutil_un.unwrap();
+						// 	println!("{}", String::from_utf8_lossy(&gacutil_un.stdout));
+						// 	println!("{}", String::from_utf8_lossy(&gacutil_un.stderr));
+						// }
+						// else {
+						// 	match gacutil_un {
+						// 		Ok(_) => (), 
+						// 		Err(ex) => println!("{:?}", ex)
+						// 	}
+						// }
+
+						let gacutil_reg = set_vs_env(&mut Command::new(&gacutil_path), devenv_dir)
+							.args(&["/i", ".\\clr_c_api\\RustAppDomainManager\\bin\\Debug\\RustAppDomainManager.dll"])
+							.output();
+
+						// if gacutil_reg.is_ok() {
+						// 	let gacutil_reg = gacutil_reg.unwrap();
+						// 	println!("{}", String::from_utf8_lossy(&gacutil_reg.stdout));
+						// 	println!("{}", String::from_utf8_lossy(&gacutil_reg.stderr));
+						// }
+						// else {
+						// 	match gacutil_reg {
+						// 		Ok(_) => (), 
+						// 		Err(ex) => println!("{:?}", ex)
+						// 	}
+						// }
 						//now register
 						let regasm = set_vs_env(&mut Command::new("regasm"), devenv_dir)
 							.args(&["/tlb", ".\\clr_c_api\\RustAppDomainManager\\bin\\Debug\\RustAppDomainManager.dll"])
 							.output();
 
-						if regasm.is_ok() {
-							let regasm = regasm.unwrap();
-							println!("{}", String::from_utf8_lossy(&regasm.stdout));
-							println!("{}", String::from_utf8_lossy(&regasm.stderr));
-						}
+						// if regasm.is_ok() {
+						// 	let regasm = regasm.unwrap();
+						// 	println!("{}", String::from_utf8_lossy(&regasm.stdout));
+						// 	println!("{}", String::from_utf8_lossy(&regasm.stderr));
+						// }
 
 						let xcopy = Command::new("xcopy")
 										.args(&[".\\clr_c_api\\RustAppDomainManager\\bin\\Debug\\RustAppDomainManager.tlb", ".\\clr_c_api\\clr_c_api\\", "/Y"])
 										.output();
 
-						if xcopy.is_ok() {
-							println!("{}", String::from_utf8_lossy(&xcopy.unwrap().stdout));
-						}
+						// if xcopy.is_ok() {
+						// 	println!("{}", String::from_utf8_lossy(&xcopy.unwrap().stdout));
+						// }
 
 
 					},
